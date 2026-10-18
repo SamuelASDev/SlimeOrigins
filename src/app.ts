@@ -12,6 +12,7 @@ import { villageMarkup, renderVillage } from './village-ui';
 import { synthesisMarkup, renderItemMenus } from './synthesis-ui';
 import Phaser from 'phaser';
 import './game.css';
+import {forestRegions,forestCenter,forestNav,forestSpawnPoints,FOREST_WIDTH,FOREST_HEIGHT} from './forest-map';
 import { WorldScene } from './world';
 import { sectors, center, route, walkable, clearLine, nearestFloor, CAVE_WIDTH, CAVE_HEIGHT, type Point } from './cave-map';
 import { CombatEffects, type Telegraph } from './combat-effects';
@@ -45,7 +46,7 @@ function save() {
   if(restoringSave)return;
   try { const seconds=(Date.now()-observationStart)/1000;
     const interval=observedKills>0?seconds/observedKills:0;
-    const checkpoint:Checkpoint={at:Date.now(),kind:lastHuntedKind,interval,enabled:!paused&&!inVillage&&!scene?.bossActive&&scene?.recovering===0&&seconds>=60&&observedKills>=3};
+    const checkpoint:Checkpoint={at:Date.now(),kind:scene?.target?.kind??scene?.regions()[scene.sector].kind??lastHuntedKind,interval,context:scene?.lootContext(),enabled:!paused&&!inVillage&&!scene?.bossActive&&scene?.recovering===0&&seconds>=60&&observedKills>=3};
     localStorage.setItem(SAVE, JSON.stringify({...state,checkpoint:awayExpedition?.checkpoint(Date.now())??checkpoint})); }
   catch { if (!saveWarning) { saveWarning = true; log('Não foi possível salvar neste navegador. A sessão continua funcionando.'); } }
 }
@@ -87,13 +88,13 @@ ${villageMarkup}
 ${inventoryMarkup}
 ${merchantMarkup}
 <section id="map-panel" class="game-window frame" role="dialog" aria-labelledby="map-title" hidden>
- <div class="window-header"><div><p class="label">CAPÍTULO 01 · O DESPERTAR</p><h2 id="map-title">Caverna do Selo</h2></div><button class="close-window" aria-label="Fechar mapa" >×</button></div>
- <div class="window-body"><p class="cave-intro">Sob Jura, a aura do Dragão da Tempestade alimenta monstros e minerais. Explore os corredores, absorva habilidades e encontre o selo de Veldora.</p>
+ <div class="window-header"><div><p class="label">CAPÍTULO 01 · O DESPERTAR</p><h2 id="map-title">Rotas de Jura e da Caverna</h2></div><button class="close-window" aria-label="Fechar mapa" >×</button></div>
+ <div class="window-body"><label class="expedition-toggle"><input id="expedition" type="checkbox" ${state.autoExplore?'checked':''}> Explorar automaticamente após 6 abates no setor</label><p id="expedition-status" class="hint"></p><section class="jura-guide"><p class="label">CAPÍTULO 02 · A GRANDE FLORESTA</p><h3>Floresta de Jura</h3><p class="hint">Escolha uma região para seguir pelas trilhas. A coleta depende do ambiente; partes de monstros dependem da espécie derrotada.</p><div class="sector-list jura-routes">${forestRegions.map((z,i)=>`<button data-forest-sector="${i}"><b>${String(i+1).padStart(2,'0')} · ${z.name}</b><small>${z.subtitle}</small><span class="route-loot">${z.loot}</span><small>Perigo: ${z.danger} · ${[...new Set(z.monsters)].map(k=>creatures[k].name).join(', ')}</small></button>`).join('')}</div><p class="hint">Lobos terríveis patrulham o bosque e aranhas negras tecem seus ninhos nas árvores antigas. A distribuição de espécies e recursos foi adaptada para a exploração de Jura.</p></section><h3>Caverna do Selo</h3><p class="cave-intro">Sob Jura, a aura do Dragão da Tempestade alimenta monstros e minerais. Explore os corredores, absorva habilidades e encontre o selo de Veldora.</p>
  <div class="cave-overview" aria-label="Percurso da caverna">${sectors.map((z,i)=>`<button data-sector="${i}" title="${z.name}">${i+1}</button>`).join('<span>─</span>')}</div>
- <label class="expedition-toggle"><input id="expedition" type="checkbox" checked> Explorar automaticamente após 6 abates no setor</label><p id="expedition-status" class="hint"></p>
+
  <div class="sector-list">${sectors.map((z,i)=>`<button data-sector="${i}"><b>${String(i+1).padStart(2,'0')} · ${z.name}</b><small>${z.subtitle}</small></button>`).join('')}</div>
  <div class="cave-extras"><button id="analyze-spring" class="hunt-button">Analisar nascente · setor 1</button><p id="spring-status" class="hint"></p></div><div id="veldora-lore" class="hint">Veldora é um encontro amistoso, e não um chefe. A ordem das salas e a repetição dos monstros são adaptações para o idle.</div>
- </div><div class="window-footer">Sete setores conectados · selecione um destino para explorar</div>
+ </div><div class="window-footer">Jura: seis regiões · Caverna: sete setores · selecione um destino</div>
 </section>
 <section id="skills-panel" class="game-window frame" role="dialog" aria-labelledby="skills-title" hidden>
   <div class="window-header"><div><p class="label">PREDADOR / ANÁLISE</p><h2 id="skills-title">Habilidades absorvidas</h2></div><button class="close-window" aria-label="Fechar habilidades">×</button></div>
@@ -181,10 +182,10 @@ function renderActiveMenu() {
   const cave=scene.area==='cave';
   put('challenge',bossActive?'Desafio em andamento':cave?'Desafiar Serpente Anciã':'Desafiar guardião');
   put('boss-title',cave?'Serpente Negra Anciã':'Guardião da carapaça');
-  put('boss-area-label',cave?'DESAFIO DA CAVERNA · SETOR 5':'DESAFIO DA CLAREIRA');
+  put('boss-area-label',cave?'DESAFIO DA CAVERNA · SETOR 5':'JURA · CORAÇÃO MÁGICO');
   put('boss-description',cave?'Uma serpente anormal domina o abismo. Sua aura anuncia um hálito corrosivo. Variante criada para o jogo; Veldora continua sendo um aliado.':'Um antigo besouro coberto de pedra guarda o coração da floresta.');
-  if(cave)el('boss-traits').innerHTML='<p><b>Escamas antigas</b> · reduz dano físico. Água e veneno atravessam a defesa.</p><p><b>Hálito corrosivo</b> · área marcada antes de liberar veneno. Instinto caçador ou Percepção mágica recuam do ataque.</p><p><b>Recompensa</b> · 3 cópias garantidas (veneno, calor e paralisia), 10 essências e 100 EXP.</p>';
-  else el('boss-traits').innerHTML='<p><b>Carapaça pétrea</b> · reduz dano físico. Água e veneno atravessam a defesa.</p><p><b>Impacto sísmico</b> · preparação marcada no chão. Instinto caçador permite recuar.</p>';
+  if(cave)el('boss-traits').innerHTML='<p><b>Escamas antigas</b> · reduz dano físico. Água e veneno atravessam a defesa.</p><p><b>Hálito corrosivo</b> · área marcada antes de liberar veneno. Instinto caçador ou Percepção mágica recuam do ataque.</p><p><b>Recompensa</b> · 3 cópias garantidas (veneno, calor e paralisia), 10 essências, 100 EXP, 3 escamas e 2 cristais.</p>';
+  else el('boss-traits').innerHTML='<p><b>Carapaça pétrea</b> · reduz dano físico. Água e veneno atravessam a defesa.</p><p><b>Impacto sísmico</b> · preparação marcada no chão. Instinto caçador permite recuar.</p><p><b>Recompensa</b> · 8 ferro, 4 magiminério, 2 cristais, 10 essências, 100 EXP e 1 troféu.</p>';
 
   (el('priority') as HTMLSelectElement).disabled = bossActive;
   if(focusId){const replacement=document.getElementById(focusId);if(replacement&&replacement!==focused){replacement.focus({preventScroll:true});if(cursor!==null&&replacement instanceof HTMLInputElement&&replacement.type==='search')replacement.setSelectionRange(cursor,cursor);}}
@@ -222,44 +223,49 @@ class Meadow extends WorldScene {
   sector = state.caveSector;
   sectorKills = 0;
   destination: number | null = null;
-  exploring = true;
+  exploring = state.autoExplore;
   path: Point[] = [];
   pathAt = 0;
   veldoraSeen = false;
-  enemyName(e: Enemy) { return this.area === 'cave' && e.kind === 'bat' ? 'Morcego gigante' : creatures[e.kind].name; }
+  regions(){return this.area==='cave'?sectors:forestRegions;}
+  zoneCenter(i:number){return this.area==='cave'?center(i):forestCenter(i);}
+  navigation(){return this.area==='cave'?{route,walkable,clearLine,nearestFloor}:forestNav;}
+  lootContext(sector=this.sector){return {area:this.area,sector};}
+  rememberSector(){if(this.area==='cave')state.caveSector=this.sector;else state.forestSector=this.sector;}
+  enemyName(e: Enemy) { return this.area === 'cave' && e.kind === 'bat' ? 'Morcego gigante' : this.area==='forest'&&e.kind==='wolf'?'Lobo terrível':creatures[e.kind].name; }
   setArea(area: 'cave' | 'forest') {
     if(this.bossActive || !this.player) return;
-    observationStart=Date.now();observedKills=0;this.clearEncounter(); this.area=area; this.destination=null;this.path=[];
-    this.drawMap(); this.cameras.main.setBounds(0,0,area==='cave'?CAVE_WIDTH:800,area==='cave'?CAVE_HEIGHT:480);
-    const c=area==='cave'?center(this.sector):{x:400,y:240}; this.player.setPosition(c.x,c.y);this.playerShadow.setPosition(c.x,c.y);this.health=maxHp(state);this.recovering=0;
-    this.cameras.main.centerOn(c.x,c.y);this.populate();this.renderHud();renderMenus();
+    observationStart=Date.now();observedKills=0;this.clearEncounter();this.rememberSector();this.area=area;state.activeArea=area;this.sector=area==='cave'?state.caveSector:state.forestSector;this.destination=null;this.path=[];this.pathAt=0;this.sectorKills=0;this.routeWatchdog.reset();
+    this.drawMap(); this.cameras.main.setBounds(0,0,area==='cave'?CAVE_WIDTH:FOREST_WIDTH,area==='cave'?CAVE_HEIGHT:FOREST_HEIGHT);
+    const c=this.zoneCenter(this.sector); this.player.setPosition(c.x,c.y);this.playerShadow.setPosition(c.x,c.y);this.health=maxHp(state);this.recovering=0;
+    this.cameras.main.centerOn(c.x,c.y);this.populate();this.renderHud();renderMenus();save();
     el('area-cave').setAttribute('aria-pressed',String(area==='cave'));el('area-forest').setAttribute('aria-pressed',String(area==='forest'));
     priority='any'; (el('priority') as HTMLSelectElement).value='any';
-    for(const option of Array.from((el('priority') as HTMLSelectElement).options)) { option.hidden=option.value!=='any'&&(area==='cave'?!['bat','serpent','centipede','armorsaurus','spider'].includes(option.value):['serpent','centipede','armorsaurus','spider'].includes(option.value)); if(option.value==='bat')option.textContent=area==='cave'?'Morcego gigante':'Morcego rubro'; }
+    for(const option of Array.from((el('priority') as HTMLSelectElement).options)) { option.hidden=option.value!=='any'&&(area==='cave'?!['bat','serpent','centipede','armorsaurus','spider'].includes(option.value):!forestRegions.some(r=>r.monsters.includes(option.value as Kind))); if(option.value==='bat')option.textContent=area==='cave'?'Morcego gigante':'Morcego rubro'; }
   }
-  travelTo(i: number) {
-    if(this.bossActive)return;
-    if(this.area!=='cave') this.setArea('cave');
+  travelTo(i: number,area:'cave'|'forest'=this.area) {
+    if(this.bossActive||!Number.isInteger(i)||i<0||i>=(area==='cave'?sectors:forestRegions).length)return;
+    if(this.area!==area)this.setArea(area);
     this.destination=i;this.target=null;this.playerAttack=null;this.path=[];this.pathAt=0;
-    log(`Exploração: seguindo os corredores até ${sectors[i].name}.`,true);
+    log(`Exploração: seguindo ${this.area==='forest'?'as trilhas':'os corredores'} até ${this.regions()[i].name}.`,true);
     this.renderHud();
   }
   moveToward(goal: Point, step: number) {
     let aim=goal;
-    if(this.area==='cave'&&!clearLine(this.player,goal)) {
+    if(!this.navigation().clearLine(this.player,goal)) {
       this.pathAt-=16;
-      if(this.pathAt<=0||!this.path.length){this.path=route(this.player,goal);this.pathAt=450;}
+      if(this.pathAt<=0||!this.path.length){this.path=this.navigation().route(this.player,goal);this.pathAt=450;}
       while(this.path.length&&Phaser.Math.Distance.Between(this.player.x,this.player.y,this.path[0].x,this.path[0].y)<5)this.path.shift();
       if(!this.path.length)return false; aim=this.path[0];
     } else this.path=[];
     const distance=Phaser.Math.Distance.Between(this.player.x,this.player.y,aim.x,aim.y);if(distance<1)return false;
     const a=Phaser.Math.Angle.Between(this.player.x,this.player.y,aim.x,aim.y),n=Math.min(step,distance);
     const next={x:this.player.x+Math.cos(a)*n,y:this.player.y+Math.sin(a)*n};
-    if(this.area==='cave'&&!clearLine(this.player,next)){this.path=[];this.pathAt=0;return false;}
+    if(!this.navigation().clearLine(this.player,next)){this.path=[];this.pathAt=0;return false;}
     this.player.setPosition(next.x,next.y).setFlipX(Math.cos(a)<0);return true;
   }
   strikes: { owner: Enemy; remaining: number; aim: { x: number; y: number }; spec: AttackSpec; damage: number }[] = [];
-  preload() { preloadSpriteArt(this); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveDecor','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-decor-v2.json'); }
+  preload() { preloadSpriteArt(this);this.load.atlas('forestDecor','/assets/sprites/forest-decor-anime-v2.png','/assets/sprites/forest-decor-anime-v2.json'); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveDecor','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-decor-v2.json'); }
   create() {
     this.frameBudget.reset(performance.now());
     this.events.on('wake',()=>{this.frameBudget.reset(performance.now());this.routeWatchdog.reset();});
@@ -272,15 +278,16 @@ class Meadow extends WorldScene {
     this.cameras.main.setBounds(0, 0, CAVE_WIDTH, CAVE_HEIGHT);
     const fit = () => this.cameras.main.setZoom(Math.max(this.scale.width / 800, this.scale.height / 480));
     fit(); this.cameras.main.startFollow(this.player, true, .06, .06); this.scale.on('resize', fit);
-    this.resetSkillTimers(); this.setArea('cave'); renderMenus(); this.renderHud();
+    this.resetSkillTimers(); this.setArea(state.activeArea); renderMenus(); this.renderHud();
     log('Grande Sábio: você despertou na Caverna do Selo. Abra Mapa para escolher uma rota.', true);
     this.events.once('shutdown', () => this.scale.off('resize', fit));
   }
-  populate() { if(this.area==='cave') { for(let zone=0;zone<7;zone++)for(let n=0;n<10;n++)this.spawn(zone===2&&n%4===0?'spider':sectors[zone].kind,false,zone); }else for (let i = 0; i < 16; i++) this.spawn(kinds[i % 8]); }
+  populate() { if(this.area==='cave') { for(let zone=0;zone<7;zone++)for(let n=0;n<10;n++)this.spawn(zone===2&&n%4===0?'spider':sectors[zone].kind,false,zone); }else for(let zone=0;zone<forestRegions.length;zone++)for(let n=0;n<10;n++){const monsters=forestRegions[zone].monsters;this.spawn(monsters[n%monsters.length],false,zone);} }
   spawn(kind: Kind, boss = false, zone = this.sector) {
     let x = boss ? 460 : Phaser.Math.Between(75, 725), y = boss ? 225 : Phaser.Math.Between(85, 405);
     if (!boss && Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) < 85) x = this.player.x < 400 ? 690 : 100;
     if(this.area==='cave'&&!boss) {const c=center(zone);do{x=zone===6?c.x-Phaser.Math.Between(180,400):c.x+Phaser.Math.Between(-440,440);y=c.y+Phaser.Math.Between(-300,300);}while(!walkable({x,y}));}
+    if(this.area==='forest'){const points=forestSpawnPoints(zone),p=boss?forestCenter(zone):Phaser.Utils.Array.GetRandom(points);x=p.x;y=p.y;}
     if(boss&&this.caveBoss){const c=center(4);x=c.x+115;y=c.y;}
     const hp = boss ? (this.caveBoss?780:560) + this.bossLevel * (this.caveBoss?45:20) : creatures[kind].hp;
     const sprite = makeActor(this, x, y, boss ? this.caveBoss?'caveBoss':'guardian' : creatures[kind].texture, boss ? this.caveBoss?120:86 : kind==='spider'?54:43);
@@ -293,9 +300,9 @@ class Meadow extends WorldScene {
     if(inVillage){log('Volte à área de caça para iniciar um desafio.');return;}
     if (this.bossActive || state.level < 3 || kinds.filter(k => state.unlocked[k]).length < 3 || this.recovering > 0) return;
     this.caveBoss=this.area==='cave';this.returnSector=this.sector;
-    if(this.caveBoss){this.sector=4;state.caveSector=4;}
+    if(this.caveBoss){this.sector=4;state.caveSector=4;}else{this.sector=5;state.forestSector=5;}
     this.clearEncounter(); this.bossActive = true; this.bossLevel = Math.min(8, state.level); this.health = maxHp(state); this.attackAt = 0; this.slamAt = 6500; this.windup = 0;
-    this.anims.resumeAll(); this.tweens.resumeAll(); this.time.paused = false; this.playerPose = 0; this.playerHit = 0; this.player.clearTint(); const entry=this.caveBoss?center(4):{x:290,y:250};this.player.setPosition(entry.x-100,entry.y);this.cameras.main.centerOn(entry.x,entry.y);this.path=[];this.destination=null;this.target = this.spawn(this.caveBoss?'serpent':'beetle', true);put('boss-name',this.caveBoss?'Serpente Negra Anciã':'Guardião da carapaça'); this.resetSkillTimers();
+    this.anims.resumeAll(); this.tweens.resumeAll(); this.time.paused = false; this.playerPose = 0; this.playerHit = 0; this.player.clearTint(); const entry=this.zoneCenter(this.sector);this.player.setPosition(entry.x-100,entry.y);this.cameras.main.centerOn(entry.x,entry.y);this.path=[];this.destination=null;this.target = this.spawn(this.caveBoss?'serpent':'beetle', true);put('boss-name',this.caveBoss?'Serpente Negra Anciã':'Guardião da carapaça'); this.resetSkillTimers();
     paused = false; put('pause', 'Ⅱ Pausar caça'); el('boss-hud').hidden = false; togglePanel(null); renderMenus();
     log(this.caveBoss?'A Serpente Negra Anciã despertou! Observe a preparação do hálito corrosivo.':'Guardião desperto! Observe o impacto sísmico.',true);
     this.renderHud();
@@ -303,9 +310,9 @@ class Meadow extends WorldScene {
   finishBoss(result: 'win' | 'loss' | 'retreat') {
     if (!this.bossActive) return;
     this.bossActive = false; this.windup = 0; this.clearEncounter(); el('boss-hud').hidden = true;
-    if (result === 'win') { if(this.caveBoss){state.caveWins++;addItem(state,'serpent');addItem(state,'heat');addItem(state,'centipede');} state.village.materials.scale+=3;state.village.materials.crystal+=2;state.bossWins++; state.essence += 10; state.xp += 100; applyLevels(state); lastBossResult = `Vitória! ${this.caveBoss?'+3 habilidades (veneno, calor e paralisia), ':''}+10 essências, +100 EXP, +3 escamas, +2 cristais e +1 troféu. Total: ${state.bossWins} ${state.bossWins === 1 ? 'troféu' : 'troféus'}.`; save(); }
+    if (result === 'win') { if(this.caveBoss){state.caveWins++;addItem(state,'serpent');addItem(state,'heat');addItem(state,'centipede');} if(this.caveBoss)state.village.materials.scale+=3;else{state.village.materials.iron+=8;state.village.materials.ore+=4;}state.village.materials.crystal+=2;state.bossWins++; state.essence += 10; state.xp += 100; applyLevels(state); lastBossResult = `Vitória! ${this.caveBoss?'+3 habilidades (veneno, calor e paralisia), ':''}+10 essências, +100 EXP, ${this.caveBoss?'+3 escamas':'+8 ferro e +4 magiminério'}, +2 cristais e +1 troféu. Total: ${state.bossWins} ${state.bossWins === 1 ? 'troféu' : 'troféus'}.`; save(); }
     else lastBossResult = result === 'loss' ? 'Derrota. Nenhum progresso perdido. Tente defesa e recuperação, ou água e eletricidade. Instinto caçador evita o impacto.' : 'Você recuou. Ajuste sua build e desafie novamente quando quiser.';
-    this.sector=this.returnSector;state.caveSector=this.sector;const home=this.area==='cave'?center(this.sector):{x:400,y:240};this.health = maxHp(state); this.player.setPosition(home.x,home.y);this.cameras.main.centerOn(home.x,home.y);this.path=[]; this.resetSkillTimers(); this.populate();save();
+    this.sector=this.returnSector;this.rememberSector();const home=this.zoneCenter(this.sector);this.health = maxHp(state); this.player.setPosition(home.x,home.y);this.cameras.main.centerOn(home.x,home.y);this.path=[]; this.resetSkillTimers(); this.populate();save();
     log(lastBossResult, true); renderMenus(); this.renderHud(); if (activePanel !== 'boss-panel') togglePanel('boss-panel');
   }
   float(x: number, y: number, text: string, color = '#fff0bf') {
@@ -329,8 +336,8 @@ class Meadow extends WorldScene {
     if (enemy.boss) { this.finishBoss('win'); return; }
     const k = enemy.kind, x = enemy.x, y = enemy.y;
     this.enemies.splice(this.enemies.indexOf(enemy), 1); enemy.sprite.destroy(); enemy.shadow.destroy(); enemy.bar.destroy(); if (this.target === enemy) this.target = null;
-    if(this.area==='cave' && enemy.zone===this.sector && this.destination===null) {this.sectorKills++;if(this.exploring&&this.sectorKills>=6&&this.sector<6)this.travelTo(this.sector+1);}
-    const reward = awardKill(state, k);
+    if(enemy.zone===this.sector && this.destination===null) {this.sectorKills++;if(this.exploring&&this.sectorKills>=6&&this.sector<this.regions().length-1)this.travelTo(this.sector+1);}
+    const reward = awardKill(state,k,undefined,undefined,undefined,this.lootContext(enemy.zone));
     const resourceSummary=reward.materials.map(d=>`+${d.quantity} ${materialNames[d.material]}`).join(', '); this.health = Math.min(maxHp(state), this.health + 5);
     if (reward.unlocked) { log(`Absorção concluída: ${skills[reward.item!.skill].name}! Abra Habilidades para equipar.`, true); this.float(this.player.x, this.player.y - 24, 'ABSORÇÃO!', '#d6f49d'); }
     else log(reward.item?`Absorvido: ${itemLabel(reward.item)} · ${resourceSummary}.`:`${this.enemyName(enemy)}: +2 moedas, +${creatures[k].xp} EXP · ${resourceSummary}.`);
@@ -421,7 +428,7 @@ class Meadow extends WorldScene {
     for (const id of ['frog', 'wisp', 'miasma', 'conductor', 'steel', 'ultrasound', 'waterBlade', 'binding', 'sever'] as const) {
       if (!state.equipped.includes(id)) continue;
       this.skillTimers[id] -= dt; if (this.skillTimers[id] > 0) continue;
-      const near = this.enemies.filter(e => (this.area!=='cave'||clearLine(this.player,e)) && Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < (id === 'miasma' ? 110 : 175)).sort((a, b) => Number(b === this.target) - Number(a === this.target));
+      const near = this.enemies.filter(e => this.navigation().clearLine(this.player,e) && Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < (id === 'miasma' ? 110 : 175)).sort((a, b) => Number(b === this.target) - Number(a === this.target));
       if (!near.length) continue;
       this.skillTimers[id] = id === 'miasma' ? 1000 : (id === 'wisp'||id==='ultrasound') ? 4000 : 3000;
       this.pulse(this.player.x, this.player.y, id === 'miasma' ? 110 : 35, id === 'miasma' ? 0xb28ac6 : id === 'frog' ? 0x85d5de : 0xe7d48f);
@@ -451,12 +458,14 @@ class Meadow extends WorldScene {
       const elapsed = this.target.action.clock.elapsed;
       put('target-action', `${spec.label} · ${elapsed < spec.windup ? 'PREPARANDO' : elapsed < spec.windup + spec.travel ? 'ATAQUE' : 'RECUPERANDO'}`);
     } else put('target-action', this.target ? 'Observando o inimigo' : '');
-    put('status', paused ? 'CAÇA PAUSADA' : this.recovering > 0 ? 'RECUPERAÇÃO' : this.bossActive ? 'DESAFIO EM ANDAMENTO' : this.destination!==null?'EXPLORANDO CORREDORES':'CAÇA AUTOMÁTICA');
-    put('location-name', this.bossActive ? (this.caveBoss?'Abismo · Serpente Anciã':'Arena do guardião') : this.area==='cave'?sectors[this.sector].name:'Clareira do despertar');
-    const heading=document.querySelector('.location>p');if(heading)heading.textContent=this.area==='cave'?'CAVERNA DO SELO · '+String(this.sector+1).padStart(2,'0')+'/07':'FLORESTA DE JURA';
+    put('status', paused ? 'CAÇA PAUSADA' : this.recovering > 0 ? 'RECUPERAÇÃO' : this.bossActive ? 'DESAFIO EM ANDAMENTO' : this.destination!==null?this.area==='forest'?'SEGUINDO AS TRILHAS':'EXPLORANDO CORREDORES':'CAÇA AUTOMÁTICA');
+    put('location-name', this.bossActive ? (this.caveBoss?'Abismo · Serpente Anciã':'Arena do guardião') : this.regions()[this.sector].name);
+    const heading=document.querySelector('.location>p');if(heading)heading.textContent=this.area==='cave'?'CAVERNA DO SELO · '+String(this.sector+1).padStart(2,'0')+'/07':'FLORESTA DE JURA · '+String(this.sector+1).padStart(2,'0')+'/06';
     put('spring-status',this.springAt>0?`Energia se renovando · ${Math.ceil(this.springAt/1000)} s`:'Água e hipokute: 1 cópia de Lâmina de água e 1 de Regeneração. Recarga de 60 s.');
-    put('expedition-status',this.destination!==null?`Explorando corredores → ${sectors[this.destination].name}`:`Setor ${this.sector+1}/7 · ${this.exploring?Math.min(6,this.sectorKills)+'/6':this.sectorKills} abates · ${this.exploring?'Exploração automática':'Caça neste setor'}`);
-    document.querySelectorAll<HTMLElement>('[data-sector]').forEach(b=>b.setAttribute('aria-current',String(Number(b.dataset.sector)===this.sector)));
+    put('expedition-status',this.destination!==null?`Seguindo ${this.area==='forest'?'trilhas':'corredores'} → ${this.regions()[this.destination].name}`:`Setor ${this.sector+1}/${this.regions().length} · ${this.exploring?Math.min(6,this.sectorKills)+'/6':this.sectorKills} abates · ${this.exploring?'Exploração automática':'Caça neste setor'}`);
+    document.querySelectorAll<HTMLElement>('[data-sector]').forEach(b=>b.setAttribute('aria-current',String(this.area==='cave'&&Number(b.dataset.sector)===this.sector)));
+    document.querySelectorAll<HTMLElement>('[data-forest-sector]').forEach(b=>b.setAttribute('aria-current',String(this.area==='forest'&&Number(b.dataset.forestSector)===this.sector)));
+    el('game').setAttribute('aria-label',this.area==='forest'?'Floresta de Jura: trilhas, regiões e caça automática':'Caverna do Selo: mapa de exploração e caça automática');
     if(this.destination!==null)put('target','Explorando → setor '+(this.destination+1));
     const boss = this.enemies.find(e => e.boss);
     if (boss) { put('boss-hp-text', `${Math.ceil(boss.hp)} / ${boss.max}`); el('boss-hp-bar').style.width = `${Math.max(0, boss.hp / boss.max * 100)}%`; put('boss-action', this.windup > 0 ? this.caveBoss?'⚠ HÁLITO CORROSIVO · recue!':'⚠ IMPACTO SÍSMICO · preparando ataque!' : this.caveBoss?'ESCAMAS ANTIGAS · −60% de dano físico':'CARAPAÇA PÉTREA · −60% de dano físico'); }
@@ -466,6 +475,8 @@ class Meadow extends WorldScene {
   update(_time:number,_delta:number){
     const active=!document.hidden&&!paused&&!inVillage;
     const steps=this.frameBudget.steps(performance.now(),active);
+    const elapsed=steps.reduce((sum,dt)=>sum+dt,0),follow=1-Math.exp(-Math.max(16,elapsed)/140);
+    this.cameras.main.setLerp(follow,follow);
     if(!active){if(!document.hidden)this.renderHud();return;}
     for(const dt of steps)this.simulate(dt);
   }
@@ -479,17 +490,17 @@ class Meadow extends WorldScene {
     let playerMoving = false;
     this.attackAt -= dt; this.health = Math.min(maxHp(state), this.health + dt / 1000 * (1.5 + fx.regen));
     if (!this.target || !this.enemies.includes(this.target) || this.target.unreachableUntil>Date.now() || (!this.bossActive && priority !== 'any' && this.target.kind !== priority && this.enemies.some(e => e.kind === priority))) {
-      const local = this.enemies.filter(e=>(this.area!=='cave'||e.zone===this.sector)&&e.unreachableUntil<=Date.now());
+      const local = this.enemies.filter(e=>(e.zone===this.sector)&&e.unreachableUntil<=Date.now());
       const candidates = local.filter(e => this.bossActive || priority === 'any' || e.kind === priority);
       this.target = (candidates.length ? candidates : local).reduce<Enemy | null>((best, e) => !best || Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < Phaser.Math.Distance.Between(this.player.x, this.player.y, best.x, best.y) ? e : best, null);
     }
     if(this.destination!==null) {
-      this.target=null;const c=center(this.destination);
+      this.target=null;const c=this.zoneCenter(this.destination);
       playerMoving=this.moveToward(c,dt*.095*fx.speed);
       if(Phaser.Math.Distance.Between(this.player.x,this.player.y,c.x,c.y)<35) {
-        this.sector=this.destination;state.caveSector=this.sector;if(!state.visited.includes(this.sector))state.visited.push(this.sector);save();this.destination=null;this.sectorKills=0;this.path=[];
-        log(`Setor descoberto: ${sectors[this.sector].name}.`,true);
-        if(this.sector===6&&!this.veldoraSeen){this.veldoraSeen=true;log('Veldora: finalmente alguém para conversar! A Prisão Infinita o mantém selado. Este é um encontro amistoso.',true);togglePanel('map-panel');}
+        this.sector=this.destination;this.rememberSector();const visited=this.area==='cave'?state.visited:state.forestVisited;if(!visited.includes(this.sector))visited.push(this.sector);save();this.destination=null;this.sectorKills=0;this.path=[];
+        log(`Setor descoberto: ${this.regions()[this.sector].name}.`,true);
+        if(this.area==='cave'&&this.sector===6&&!this.veldoraSeen){this.veldoraSeen=true;log('Veldora: finalmente alguém para conversar! A Prisão Infinita o mantém selado. Este é um encontro amistoso.',true);togglePanel('map-panel');}
       }
     }
     let evading = false;
@@ -499,20 +510,20 @@ class Meadow extends WorldScene {
       if (this.slamAt <= 0 && this.windup <= 0) { this.windup = 1700; this.slamAt = 8200; boss.action = null; log(this.caveBoss?'A serpente prepara hálito corrosivo! Recue da área marcada.':'Guardião carregando impacto! Instinto caçador pode recuar automaticamente.',true); }
       if (this.windup > 0) {
         this.windup -= dt; this.warning.clear().fillStyle(0xe6a35c, .16).fillCircle(boss.x, boss.y, 100).lineStyle(2, 0xefbb78, .7).strokeCircle(boss.x, boss.y, 100);
-        if (fx.dodgeSlam) { evading = true; playerMoving = true; const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, boss.x, boss.y); if (distance < 130) { const a = Phaser.Math.Angle.Between(boss.x, boss.y, this.player.x, this.player.y); const next={x:this.player.x+Math.cos(a)*dt*.16,y:this.player.y+Math.sin(a)*dt*.16};if(this.area!=='cave'||walkable(next))this.player.setPosition(this.area==='cave'?next.x:Phaser.Math.Clamp(next.x,60,740),this.area==='cave'?next.y:Phaser.Math.Clamp(next.y,65,415)); } }
+        if (fx.dodgeSlam) { evading = true; playerMoving = true; const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, boss.x, boss.y); if (distance < 130) { const a = Phaser.Math.Angle.Between(boss.x, boss.y, this.player.x, this.player.y); const next={x:this.player.x+Math.cos(a)*dt*.16,y:this.player.y+Math.sin(a)*dt*.16};if(this.navigation().clearLine(this.player,next))this.player.setPosition(next.x,next.y); } }
         if (this.windup <= 0) { this.warning.clear(); this.pulse(boss.x, boss.y, 100, 0xe9aa65); if (Phaser.Math.Distance.Between(this.player.x, this.player.y, boss.x, boss.y) <= 103) { const damage = incomingDamage((this.caveBoss?58:42) + this.bossLevel * 3, state, true); this.takePlayerDamage(damage,this.caveBoss?'venom':'crush',this.caveBoss?0xb49bd8:0xe7bf89); this.combatFX.ring({ x: boss.x, y: boss.y }, 0xe7bf89); this.float(this.player.x, this.player.y - 14, 'IMPACTO!', '#f2a781'); } else this.float(this.player.x, this.player.y, 'ESQUIVA!', '#c8e6a0'); }
       }
     }
     if (this.target && !evading && !this.playerAttack) {
       const e = this.target, reach = e.boss ? 65 : 42, distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
-      if (needsApproach(this.player,e,reach,this.area!=='cave'||clearLine(this.player,e))) { playerMoving = this.moveToward(e, Math.min(distance - reach + 1, dt * .065 * fx.speed)); }
-      else if (this.attackAt <= 0 && (this.area!=='cave'||clearLine(this.player,e))) { this.attackAt = 850 / fx.haste; this.playerAttack = { clock: startAttack(), target: e }; this.player.setFlipX(e.x < this.player.x); }
+      if (needsApproach(this.player,e,reach,this.navigation().clearLine(this.player,e))) { playerMoving = this.moveToward(e, dt * .065 * fx.speed); }
+      else if (this.attackAt <= 0 && this.navigation().clearLine(this.player,e)) { this.attackAt = 850 / fx.haste; this.playerAttack = { clock: startAttack(), target: e }; this.player.setFlipX(e.x < this.player.x); }
     }
     if(!this.bossActive&&(this.target||this.destination!==null)){
       if(this.routeWatchdog.tick(dt,this.player,`${state.kills}:${this.destination}:${this.target?.hp??0}`)){
         if(this.target)this.target.unreachableUntil=Date.now()+8000;
         this.target=null;this.playerAttack=null;this.path=[];this.pathAt=0;
-        if(this.area==='cave'&&!walkable(this.player)){const safe=nearestFloor(this.player);if(safe)this.player.setPosition(safe.x,safe.y);}
+        if(!this.navigation().walkable(this.player)){const safe=this.navigation().nearestFloor(this.player);if(safe)this.player.setPosition(safe.x,safe.y);}
         log('Rota obstruída: Rimuru está recalculando o caminho.');
       }
     }else this.routeWatchdog.reset();
@@ -528,9 +539,9 @@ class Meadow extends WorldScene {
       if (e.poisonUntil > 0) { e.poisonUntil -= dt; e.poisonAt -= dt; if (e.poisonAt <= 0) { e.poisonAt = 1000; this.hurt(e, 5*e.poisonPower, 'poison'); if (token !== this.generation) return; if (!this.enemies.includes(e)) continue; } }
       const d = Phaser.Math.Distance.Between(e.x, e.y, this.player.x, this.player.y);
       const spec = enemyAttacks[e.boss ? this.caveBoss?'serpent':'guardian' : e.kind];
-      const visible = this.area!=='cave'||clearLine(e,this.player);
+      const visible = d<500&&this.navigation().clearLine(e,this.player);
       const enemyMoving = e.rooted<=0 && visible && !e.boss && !e.action && d < spec.range + 35 && d > (spec.ranged ? spec.range * .8 : 40);
-      if (enemyMoving) { const a = Phaser.Math.Angle.Between(e.x, e.y, this.player.x, this.player.y); const next={x:e.x+Math.cos(a)*dt*.023,y:e.y+Math.sin(a)*dt*.023};if(this.area!=='cave'||walkable(next)){e.x=next.x;e.y=next.y;} }
+      if (enemyMoving) { const a = Phaser.Math.Angle.Between(e.x, e.y, this.player.x, this.player.y); const next={x:e.x+Math.cos(a)*dt*.023,y:e.y+Math.sin(a)*dt*.023};if(this.navigation().clearLine(e,next)){e.x=next.x;e.y=next.y;} }
       if (e.rooted<=0 && visible && d <= spec.range && e.attackAt <= 0 && !e.action && !(e.boss && this.windup > 0)) {
         const length = Math.max(1, d);
         e.action = { clock: startAttack(), aim: { x: this.player.x, y: this.player.y }, direction: { x: (this.player.x - e.x) / length, y: (this.player.y - e.y) / length } };
@@ -549,7 +560,7 @@ class Meadow extends WorldScene {
     this.player.setDepth(this.player.y / 100 + .1);
     if (this.health <= 0) {
       if (this.bossActive) { this.finishBoss('loss'); return; }
-      this.strikes = []; this.playerAttack = null; this.combatFX.clear(); for (const e of this.enemies) { e.action = null; e.sprite.setPosition(e.x, e.y).setScale(e.baseScale).setAngle(0).play(`${e.boss ? this.caveBoss?'caveBoss':'guardian' : e.kind}-idle`); } observationStart=Date.now();observedKills=0;this.health = 0; this.recovering = 5000; this.target = null; this.player.setPosition(this.area==='cave'?center(this.sector).x:400,this.area==='cave'?center(this.sector).y:240);this.path=[];
+      this.strikes = []; this.playerAttack = null; this.combatFX.clear(); for (const e of this.enemies) { e.action = null; e.sprite.setPosition(e.x, e.y).setScale(e.baseScale).setAngle(0).play(`${e.boss ? this.caveBoss?'caveBoss':'guardian' : e.kind}-idle`); } observationStart=Date.now();observedKills=0;this.health = 0; this.recovering = 5000; this.target = null; this.player.setPosition(this.zoneCenter(this.sector).x,this.zoneCenter(this.sector).y);this.path=[];
       for (const e of this.enemies) { e.poisonUntil = 0; e.attackAt = 1500; }
       log('Vitalidade esgotada. Recuperando por 5 s, sem perder conhecimento.');receiveRewards();
     }
@@ -592,14 +603,15 @@ window.addEventListener('pagehide',()=>{if(awayExpedition)creditBackground();sav
 
 el('area-cave').onclick=()=>{leaveVillage();scene.setArea('cave');};
 el('area-forest').onclick=()=>{leaveVillage();scene.setArea('forest');};
-document.querySelectorAll<HTMLButtonElement>('[data-sector]').forEach(b=>b.onclick=()=>{scene.travelTo(Number(b.dataset.sector));togglePanel(null);});
-(el('expedition') as HTMLInputElement).onchange=e=>{scene.exploring=(e.target as HTMLInputElement).checked;};
+document.querySelectorAll<HTMLButtonElement>('[data-sector]').forEach(b=>b.onclick=()=>{scene.travelTo(Number(b.dataset.sector),'cave');togglePanel(null);});
+document.querySelectorAll<HTMLButtonElement>('[data-forest-sector]').forEach(b=>b.onclick=()=>{scene.travelTo(Number(b.dataset.forestSector),'forest');togglePanel(null);});
+(el('expedition') as HTMLInputElement).onchange=e=>{scene.exploring=(e.target as HTMLInputElement).checked;state.autoExplore=scene.exploring;save();};
 
 el('analyze-spring').onclick=()=>{
  scene.springAt=Math.max(0,(state.springReadyAt??0)-Date.now());
  if(scene.bossActive||scene.springAt>0){log('A nascente precisa de um minuto para recuperar sua energia.');return;}
- if(scene.area!=='cave'||scene.sector!==0||scene.destination!==null){scene.travelTo(0);log('Retorne à nascente do primeiro setor para analisar água e hipokute.');return;}
- const c=center(0);if(Phaser.Math.Distance.Between(scene.player.x,scene.player.y,c.x,c.y)>380){scene.travelTo(0);return;}
+ if(scene.area!=='cave'||scene.sector!==0||scene.destination!==null){scene.travelTo(0,'cave');log('Retorne à nascente do primeiro setor para analisar água e hipokute.');return;}
+ const c=center(0);if(Phaser.Math.Distance.Between(scene.player.x,scene.player.y,c.x,c.y)>380){scene.travelTo(0,'cave');return;}
  addItem(state,'waterBlade');addItem(state,'mushroom');scene.springAt=60000;state.springReadyAt=Date.now()+60000;save();renderMenus();log('Análise da nascente: +1 Lâmina de água e +1 Regeneração. A fonte se renova em 60 s.',true);
 };
 
@@ -616,15 +628,15 @@ setInterval(()=>{if(!document.hidden)save();},15000);
 function startBackground(){
  if(awayExpedition||restoringSave)return;
  const seconds=(Date.now()-observationStart)/1000;
- const kind=scene.target?.kind??(scene.area==='cave'?sectors[state.caveSector].kind:lastHuntedKind);
+ const kind=scene.target?.kind??(scene.regions()[scene.sector].kind);
  const interval=seconds>=60&&observedKills>=3?Math.min(120,Math.max(3,seconds/observedKills)):estimateHuntInterval(state,kind);
- awayExpedition=new BackgroundExpedition({at:Date.now(),kind,interval,enabled:!paused&&!inVillage&&!scene.bossActive&&scene.recovering<=0});
+ awayExpedition=new BackgroundExpedition({at:Date.now(),kind,interval,context:scene.lootContext(),enabled:!paused&&!inVillage&&!scene.bossActive&&scene.recovering<=0});
  scene.frameBudget.reset(performance.now());save();
 }
 function creditBackground(){
  if(!awayExpedition||restoringSave)return;const kills=awayExpedition.claim(Date.now());if(!kills)return;
  const before=state.inventory.length;
- for(let i=0;i<kills;i++)awardKill(state,awayExpedition.start.kind);
+ for(let i=0;i<kills;i++)awardKill(state,awayExpedition.start.kind,undefined,undefined,undefined,awayExpedition.start.context);
  receiveRewards(state.inventory.length-before);save();
 }
 function resumeVisible(){

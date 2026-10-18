@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import {drawJura} from './forest-art';
 import { CELL, CAVE_WIDTH, CAVE_HEIGHT, floor, sectors, center, pillars } from './cave-map';
 
 export class WorldScene extends Phaser.Scene {
@@ -112,23 +113,5 @@ export class WorldScene extends Phaser.Scene {
     }
     g.destroy();
   }
-  drawForest() {
-    const g = this.add.graphics(); const rand = new Phaser.Math.RandomDataGenerator(['slime-clearing']);
-    for (let y = 0; y < 480; y += 16) for (let x = 0; x < 800; x += 16) {
-      g.fillStyle(rand.pick([0x365639, 0x385b3d, 0x3b5d3d, 0x3c603f]), 1).fillRect(x, y, 16, 16);
-      if (rand.frac() > .55) { g.fillStyle(0x678052, .45).fillRect(x + rand.between(1, 13), y + rand.between(1, 13), 2, 3); }
-    }
-    // A winding earth path and a shallow pool make the clearing readable.
-    for (let x = 0; x < 800; x += 8) { const y = 260 + Math.sin(x / 110) * 38; g.fillStyle(0x7e7950).fillRect(x, y, 8, 38); g.fillStyle(0x989062, .4).fillRect(x, y + 4, 6, 3); }
-    g.fillStyle(0x294b42).fillRect(540, 65, 142, 65).fillRect(556, 49, 105, 96);
-    g.fillStyle(0x568a7e).fillRect(548, 72, 125, 50).fillRect(563, 57, 89, 78);
-    for (let i = 0; i < 12; i++) g.fillStyle(0x8ec0a1, .5).fillRect(rand.between(565, 650), rand.between(76, 115), 12, 2);
-    // Border trees are outside the walkable clearing.
-    const tree = (x: number, y: number) => { g.fillStyle(0x1b3529, .45).fillEllipse(x + 5, y + 30, 54, 17); g.fillStyle(0x634d31).fillRect(x - 5, y, 10, 29); g.fillStyle(0x203e2c).fillRect(x - 25, y - 20, 50, 30).fillRect(x - 17, y - 32, 34, 18); g.fillStyle(0x2c5034).fillRect(x - 22, y - 26, 40, 25).fillRect(x - 12, y - 37, 25, 22); g.fillStyle(0x456640).fillRect(x - 13, y - 32, 18, 6).fillRect(x - 21, y - 14, 13, 5); };
-    for (let x = 12; x < 820; x += 43) { tree(x, 28 + rand.between(-8, 8)); tree(x, 468 + rand.between(-7, 7)); }
-    for (let y = 70; y < 450; y += 43) { tree(12, y); tree(788, y); }
-    for (let i = 0; i < 65; i++) { const x = rand.between(55, 740), y = rand.between(65, 425); g.fillStyle(rand.pick([0xcbb88b, 0xb2c887, 0x9aafc4]), .8).fillRect(x, y, 2, 2); }
-    g.fillStyle(0x89927a).fillRect(165, 106, 24, 15).fillRect(172, 99, 13, 8); g.fillStyle(0xaab098).fillRect(172, 101, 10, 3);
-    this.add.text(24, 450, 'FLORESTA DE JURA · CLAREIRA I', { fontFamily: 'monospace', fontSize: '9px', color: '#b4c7a3' }).setDepth(30);
-  }
+  drawForest() { drawJura(this); }
 }

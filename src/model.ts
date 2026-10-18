@@ -62,13 +62,13 @@ export const recipes: Record<FusionId, { parents: [SkillId, SkillId]; essence: n
   conductor: { parents: ['frog', 'wisp'], essence: 12, clue: 'A água abre o caminho para a descarga.' },
 };
 export type SkillItem = ItemIdentity & { uid: number; skill: SkillId; rank: number };
-export type State = { market:MarketState; coins:number; equipment:Equipment; skillSlots:(number|null)[]; village: Village; springReadyAt?: number; inventory: SkillItem[]; nextItem: number; pity: Record<Kind, number>; caveWins: number; caveSector: number; forestSector:number; forestVisited:number[]; activeArea:'cave'|'forest'; visited: number[]; version: 4; level: number; xp: number; kills: number; essence: number; bossWins: number; fragments: Record<Kind, number>; unlocked: Record<SkillId, boolean>; equipped: SkillId[] };
-export const fresh = (): State => ({ market:freshMarket(), coins:0, equipment:freshEquipment(), skillSlots:[null,null,null], village: freshVillage(), inventory: [], nextItem: 1, pity: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, caveWins: 0, caveSector: 0, forestSector:0, forestVisited:[0], activeArea:'cave', visited: [0], version: 4, level: 1, xp: 0, kills: 0, essence: 0, bossWins: 0, fragments: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, unlocked: Object.fromEntries(skillIds.map(k => [k, false])) as Record<SkillId, boolean>, equipped: [] });
+export type State = { market:MarketState; coins:number; equipment:Equipment; skillSlots:(number|null)[]; village: Village; springReadyAt?: number; inventory: SkillItem[]; nextItem: number; pity: Record<Kind, number>; caveWins: number; caveSector: number; forestSector:number; forestVisited:number[]; activeArea:'cave'|'forest'; autoExplore:boolean; visited: number[]; version: 4; level: number; xp: number; kills: number; essence: number; bossWins: number; fragments: Record<Kind, number>; unlocked: Record<SkillId, boolean>; equipped: SkillId[] };
+export const fresh = (): State => ({ market:freshMarket(), coins:0, equipment:freshEquipment(), skillSlots:[null,null,null], village: freshVillage(), inventory: [], nextItem: 1, pity: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, caveWins: 0, caveSector: 0, forestSector:0, forestVisited:[0], activeArea:'cave', autoExplore:true, visited: [0], version: 4, level: 1, xp: 0, kills: 0, essence: 0, bossWins: 0, fragments: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, unlocked: Object.fromEntries(skillIds.map(k => [k, false])) as Record<SkillId, boolean>, equipped: [] });
 const record = (v: unknown): Record<string, unknown> => v && typeof v === 'object' ? v as Record<string, unknown> : {};
 const integer = (v: unknown, fallback = 0, max = 1e9) => typeof v === 'number' && Number.isInteger(v) && v >= 0 ? Math.min(v, max) : fallback;
 export function migrate(raw: unknown): State {
   const r = record(raw), result = fresh();
-  result.market=readMarket(r.market);result.village=readVillage(r.village);result.coins=integer(r.coins);
+  result.autoExplore=r.autoExplore!==false;result.market=readMarket(r.market);result.village=readVillage(r.village);result.coins=integer(r.coins);
   const identities=new Set<string>();
   result.level = Math.max(1, integer(r.level, 1, 10000));
   result.xp = integer(r.xp); result.kills = integer(r.kills);

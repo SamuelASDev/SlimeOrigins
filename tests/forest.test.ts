@@ -32,7 +32,7 @@ test('loot de Jura separa ambiente e partes da espécie, sem madeira no riacho o
 });
 test('save preserva floresta e caverna independentemente e saneia índices inválidos',()=>{
  const old=migrate({version:4,level:10,kills:22,caveSector:4,visited:[0,4]});assert.equal(old.forestSector,0);assert.deepEqual(old.forestVisited,[0]);assert.equal(old.activeArea,'cave');assert.equal(old.caveSector,4);
- old.activeArea='forest';old.forestSector=3;old.forestVisited=[0,2,3];assert.deepEqual(migrate(old),old);
+ old.autoExplore=false;old.activeArea='forest';old.forestSector=3;old.forestVisited=[0,2,3];assert.deepEqual(migrate(old),old);
  const bad=migrate({...old,forestSector:999,forestVisited:[-1,0,2,2,6,'3'],activeArea:'bad'});assert.equal(bad.forestSector,5);assert.deepEqual(bad.forestVisited,[0,2]);assert.equal(bad.activeArea,'cave');
 });
 test('recompensas offline e expedição oculta conservam o habitat do checkpoint',()=>{

@@ -21,4 +21,9 @@ const river=forestRegions[1];for(let dy=-10;dy<=10;dy++)for(let dx=-6;dx<=3;dx++
 export const forestObstacles=forestRegions.flatMap((r,zone)=>[[-10,-7],[10,7],[-11,7],[11,-7]].map(([dx,dy],i)=>({x:r.x+dx,y:r.y+dy,zone,frame:zone===3?'iron':zone===5?'crystal':zone===1?'willow':'oak',i})));
 for(const p of forestObstacles)for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++)forestFloor.delete(key(p.x+x,p.y+y));
 export const forestNav=gridNavigation(forestFloor,CELL);
-export function forestSpawnPoints(zone:number){const r=forestRegions[zone];if(!r)return [];return [...forestFloor].map(k=>{const [x,y]=k.split(',').map(Number);return {x:x*CELL+16,y:y*CELL+16};}).filter(p=>Math.abs(p.x-(r.x*CELL+16))<420&&Math.abs(p.y-(r.y*CELL+16))<300);}
+const spawnCache=new Map<number,{x:number;y:number}[]>();
+export function forestSpawnPoints(zone:number){
+ const r=forestRegions[zone];if(!r)return [];const cached=spawnCache.get(zone);if(cached)return cached;
+ const points=[...forestFloor].map(k=>{const [x,y]=k.split(',').map(Number);return {x:x*CELL+16,y:y*CELL+16};}).filter(p=>Math.abs(p.x-(r.x*CELL+16))<420&&Math.abs(p.y-(r.y*CELL+16))<300);
+ spawnCache.set(zone,points);return points;
+}

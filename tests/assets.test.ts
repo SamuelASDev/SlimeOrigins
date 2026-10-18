@@ -65,3 +65,10 @@ test('atlas de ícones cobrem todas as habilidades e variantes de equipamento',(
  const skills=readFileSync(new URL('icons-skills-anime-v1.png',dir)),items=readFileSync(new URL('icons-items-anime-v1.png',dir));
  assert.equal(skills.readUInt32BE(16)*4,skills.readUInt32BE(20)*6);assert.equal(items.readUInt32BE(16),items.readUInt32BE(20));
 });
+
+test('atlas de Jura possui seis props completos com recortes dentro das células',()=>{
+ const file='forest-decor-anime-v2',png=readFileSync(new URL(file+'.png',dir)),atlas=JSON.parse(readFileSync(new URL(file+'.json',dir),'utf8'));
+ assert.equal(png.readUInt32BE(16),atlas.meta.size.w);assert.equal(png.readUInt32BE(20),atlas.meta.size.h);
+ assert.deepEqual(Object.keys(atlas.frames),['oak','willow','iron','crystal','herbs','log']);
+ for(const [i,item] of Object.values(atlas.frames).entries() as ArrayIterator<[number,any]>){const {x,y,w,h}=item.frame;assert.ok(w>0&&h>0);assert.ok(x>=i%3*512&&x+w<=(i%3+1)*512);assert.ok(y>=Math.floor(i/3)*512&&y+h<=(Math.floor(i/3)+1)*512);}
+});

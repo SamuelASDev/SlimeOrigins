@@ -1,4 +1,5 @@
-import {skillIcon,gearIcon} from './item-icons.ts';
+import {materialIds,materialNames,resourceSources,resourceValues} from './resources.ts';
+import {skillIcon,gearIcon,supplyIcon} from './item-icons.ts';
 import {preserveMenuState} from './menu-state.ts';
 import { skills, itemLabel, equipSkillItem, removeSkillSlot, skillItemError, CAPACITY, energyUsed, type State } from './model.ts';
 import { gearSlots,gearNames,gearDescription,equipGear,gearValue,type GearSlot } from './equipment.ts';
@@ -7,7 +8,7 @@ const get=(id:string)=>document.getElementById(id)!;
 let chosenSkill=0,chosenGear=0,slot=0,filter='all',search='',tab='gear',skillPage=0,gearPage=0;
 const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const pagination=(prefix:string,page:number,total:number,size:number)=>`<div class="bag-pagination"><button id="${prefix}-prev" ${page<=0?'disabled':''}>← Anterior</button><span>Página ${page+1} / ${Math.max(1,Math.ceil(total/size))}</span><button id="${prefix}-next" ${(page+1)*size>=total?'disabled':''}>Próxima →</button></div>`;
-export const inventoryMarkup=`<section id="inventory-panel" class="game-window frame inventory-window" role="dialog" aria-labelledby="inventory-title" hidden><div class="window-header"><div><p class="label">PERSONAGEM / POSSES</p><h2 id="inventory-title">Inventário e equipamentos</h2></div><button class="close-window" aria-label="Fechar inventário">×</button></div><div class="window-body"><div class="inventory-tabs"><button data-inventory-tab="gear">Equipamentos</button><span class="merchant-location-note">Compras e vendas: visite Myourmiles na vila</span><strong id="inventory-coins"></strong></div><div id="equipment-content"></div></div><div class="window-footer">I · Inventário · H · Habilidades · ★ Protege contra venda e fusão</div></section>`;
+export const inventoryMarkup=`<section id="inventory-panel" class="game-window frame inventory-window" role="dialog" aria-labelledby="inventory-title" hidden><div class="window-header"><div><p class="label">PERSONAGEM / POSSES</p><h2 id="inventory-title">Inventário e equipamentos</h2></div><button class="close-window" aria-label="Fechar inventário">×</button></div><div class="window-body"><div class="inventory-tabs"><button data-inventory-tab="gear">Equipamentos</button><button data-inventory-tab="resources">Recursos</button><span class="merchant-location-note">Compras e vendas: visite Myourmiles na vila</span><strong id="inventory-coins"></strong></div><div id="equipment-content"></div><div id="resources-content" hidden></div></div><div class="window-footer">I · Inventário · H · Habilidades · ★ Protege contra venda e fusão</div></section>`;
 export function renderSkillBag(s:State,locked:boolean,changed:()=>void,announce:(m:string)=>void){
  const selected=s.inventory.find(i=>i.uid===chosenSkill);
  const options=s.inventory.filter(i=>(filter!=='free'||!s.skillSlots.includes(i.uid))&&(filter!=='favorites'||i.favorite)&&skills[i.skill].name.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR'))).sort((a,b)=>b.rank-a.rank||a.uid-b.uid);
@@ -30,7 +31,8 @@ export function renderSkillBag(s:State,locked:boolean,changed:()=>void,announce:
 }
 export function renderInventory(s:State,locked:boolean,changed:()=>void,announce:(m:string)=>void){
  get('inventory-coins').textContent=`◉ ${s.coins} moedas`;
- get('equipment-content').hidden=false;
+ get('equipment-content').hidden=tab!=='gear';get('resources-content').hidden=tab!=='resources';
+ get('resources-content').innerHTML=`<p class="hint">Os recursos chegam automaticamente durante a caça, mesmo com este inventário aberto. Consulte a origem antes de escolher uma rota.</p><div class="resource-grid">${materialIds.map(id=>`<article class="resource-card">${supplyIcon(id)}<div><h3>${materialNames[id]}</h3><strong data-resource-count="${id}">${s.village.materials[id]}</strong><p>${resourceSources[id]}</p><small>Venda: ${resourceValues[id]} moedas por unidade na vila</small></div></article>`).join('')}</div>`;
  document.querySelectorAll<HTMLButtonElement>('[data-inventory-tab]').forEach(b=>{b.setAttribute('aria-pressed',String(tab===b.dataset.inventoryTab));b.onclick=()=>{tab=b.dataset.inventoryTab!;renderInventory(s,locked,changed,announce);};});
  gearPage=Math.min(gearPage,Math.max(0,Math.ceil(s.equipment.items.length/30)-1));
  const item=s.equipment.items.find(i=>i.uid===chosenGear);

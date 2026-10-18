@@ -2,7 +2,7 @@
 import {fresh,addItem,equipSkillItem} from '../src/model.ts';
 import {addGear,equipGear} from '../src/equipment.ts';
 const s=fresh();s.level=12;s.kills=100;s.coins=800;s.essence=100;s.village.founded=true;s.village.artisan=true;
-s.village.buildings={workshop:3,lab:3,alchemy:3};s.village.materials={timber:300,ore:300,silk:300,herbs:300};
+s.village.buildings={workshop:3,lab:3,alchemy:3};for(const key of Object.keys(s.village.materials))s.village.materials[key]=300;
 for(const [id,rank] of [['heat',1],['heat',1],['heat',5],['beetle',1],['mushroom',1],['waterBlade',3],['wisp',3],['wolf',3],['bat',3]])addItem(s,id,rank);
 for(let i=0;i<35;i++)addItem(s,['spider','steel','serpent','armorsaurus'][i%4],i%3+1);
 equipSkillItem(s,s.inventory[7].uid,0);

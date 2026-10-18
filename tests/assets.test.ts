@@ -1,4 +1,5 @@
-import {skillOrder,skillIcon,gearIcon,supplyIcon} from '../src/item-icons.ts';
+import {skillOrder,skillIcon,gearIcon,supplyIcon,resourceOrder} from '../src/item-icons.ts';
+import {materialIds} from '../src/resources.ts';
 import {skillIds} from '../src/model.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -57,7 +58,10 @@ test('atlas de ícones cobrem todas as habilidades e variantes de equipamento',(
  assert.deepEqual([...skillOrder].sort(),[...skillIds].sort());assert.equal(new Set(skillOrder).size,24);
  for(const id of skillIds)assert.match(skillIcon(id),/icon-skills/);
  for(const slot of ['weapon','armor','charm'] as const)for(const tier of [1,2,3])assert.match(gearIcon(slot,tier),/icon-items/);
- assert.match(supplyIcon('ore'),/icon-items/);
+ assert.deepEqual([...resourceOrder].sort(),[...materialIds].sort());
+ for(const id of materialIds)assert.match(supplyIcon(id),/icon-resources/);
+ const resources=readFileSync(new URL('icons-resources-anime-v1.png',dir));
+ assert.equal(resources.readUInt32BE(16),resources.readUInt32BE(20));
  const skills=readFileSync(new URL('icons-skills-anime-v1.png',dir)),items=readFileSync(new URL('icons-items-anime-v1.png',dir));
  assert.equal(skills.readUInt32BE(16)*4,skills.readUInt32BE(20)*6);assert.equal(items.readUInt32BE(16),items.readUInt32BE(20));
 });

@@ -1,3 +1,6 @@
+import {merchantMarkup,renderMerchant,tickMerchant} from './merchant-ui';
+import {skillIcon} from './item-icons';
+import { preserveMenuState } from './menu-state';
 import { inventoryMarkup, renderInventory } from './inventory-ui';
 import { offlineReward, decodeSave, nextObjective, type Checkpoint } from './journey';
 import { VillageMap } from './village-map';
@@ -56,7 +59,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </section>
   <section class="location frame"><p>FLORESTA DE JURA</p><h1 id="location-name">Clareira do despertar</h1><div><i class="live-dot"></i><span id="status">CAÇA AUTOMÁTICA</span></div><p class="resources" id="resources"></p></section>
   <nav class="area-tabs frame" aria-label="Áreas do mundo"><button id="area-cave" aria-pressed="true">01 · Caverna do Selo</button><button id="area-forest" aria-pressed="false">02 · Floresta de Jura</button><button data-panel="map-panel">⌖ Mapa</button></nav>
-  <div class="village-map-controls frame"><span>ARRASTE · RODA PARA ZOOM · CONVERSE COM OS MORADORES</span><div><button id="leave-village">← Voltar à caça</button><button id="center-village">⌖ Centralizar</button><button data-village-place="workshop">Oficina</button><button data-village-place="lab">Laboratório</button><button data-village-place="alchemy">Alquimia</button></div></div><div class="world-title" aria-hidden="true"><span>SLIME · ORIGENS</span><small>ECOS DA EVOLUÇÃO</small></div>
+  <div class="village-map-controls frame"><span>ARRASTE · RODA PARA ZOOM · CONVERSE COM OS MORADORES</span><div><button id="leave-village">← Voltar à caça</button><button id="center-village">⌖ Centralizar</button><button data-village-place="workshop">Oficina</button><button data-village-place="lab">Laboratório</button><button data-village-place="alchemy">Alquimia</button><button id="visit-merchant">Myourmiles · Mercador</button></div></div><div class="world-title" aria-hidden="true"><span>SLIME · ORIGENS</span><small>ECOS DA EVOLUÇÃO</small></div>
   <section id="boss-hud" class="boss-hud frame" aria-label="Vida do chefe" hidden><div><strong id="boss-name">Serpente Negra Anciã</strong><span id="boss-hp-text"></span></div><div class="meter boss-meter"><div id="boss-hp-bar"></div></div><p id="boss-action"></p><button id="retreat">Recuar do desafio</button></section>
   <nav class="menu-rail" aria-label="Menus do jogo"><button class="menu-button" data-panel="village-panel" title="Vila (V)"><span>⌂</span>Vila<kbd>V</kbd></button>
     <button class="menu-button" data-panel="inventory-panel" title="Inventário (I)"><span>▣</span>Inventário<kbd>I</kbd></button>
@@ -78,6 +81,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 </div>
 ${villageMarkup}
 ${inventoryMarkup}
+${merchantMarkup}
 <section id="map-panel" class="game-window frame" role="dialog" aria-labelledby="map-title" hidden>
  <div class="window-header"><div><p class="label">CAPÍTULO 01 · O DESPERTAR</p><h2 id="map-title">Caverna do Selo</h2></div><button class="close-window" aria-label="Fechar mapa" >×</button></div>
  <div class="window-body"><p class="cave-intro">Sob Jura, a aura do Dragão da Tempestade alimenta monstros e minerais. Explore os corredores, absorva habilidades e encontre o selo de Veldora.</p>
@@ -90,7 +94,7 @@ ${inventoryMarkup}
 <section id="skills-panel" class="game-window frame" role="dialog" aria-labelledby="skills-title" hidden>
   <div class="window-header"><div><p class="label">PREDADOR / ANÁLISE</p><h2 id="skills-title">Habilidades absorvidas</h2></div><button class="close-window" aria-label="Fechar habilidades">×</button></div>
   <div class="window-body"><div class="build-summary"><div class="heading-row"><span class="label">SUA BUILD</span><span id="capacity"></span></div><div id="slot" class="build-slots"></div><p class="hint" id="build-hint"></p></div>
-  <div class="heading-row"><span class="label">REGISTRO DE ESSÊNCIAS</span><span id="collection"></span></div><div id="skills"></div><p class="hint">Cada habilidade é uma cópia individual, que pode ser equipada, fundida ou vendida. 25% de absorção por abate; no máximo oito abates entre cópias. Você pode guardar e combinar habilidades repetidas.</p></div>
+  <div class="heading-row"><span class="label">REGISTRO DE ESSÊNCIAS</span><span id="collection"></span></div><div id="pending-loot" class="pending-loot"><span id="pending-loot-text"></span><button id="show-new-loot">Mostrar novos itens</button></div><div id="skills"></div><p class="hint">Cada habilidade é uma cópia individual, que pode ser equipada, fundida ou vendida. 25% de absorção por abate; no máximo oito abates entre cópias. Você pode guardar e combinar habilidades repetidas.</p></div>
   <div class="window-footer">✧ Três espaços, seis pontos de capacidade. A caça continua ao fundo.</div>
 </section>
 <section id="fusion-panel" class="game-window frame" role="dialog" aria-labelledby="fusion-title" hidden><div class="window-header"><div><p class="label">PREDADOR / SÍNTESE</p><h2 id="fusion-title">Câmara de síntese</h2></div><button class="close-window" aria-label="Fechar fusões">×</button></div><div class="window-body">${synthesisMarkup}</div><div class="window-footer">Dois ingredientes · confira a prévia e confirme</div></section>
@@ -99,14 +103,15 @@ ${inventoryMarkup}
 <section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Expedições offline usam 50% do ritmo observado após 60 segundos e 3 abates de caçada ativa, com limite de 2 horas e 240 abates. Não exploram novas regiões nem enfrentam chefes.</p><div class="save-tools"><button id="sound-toggle">Áudio</button><button id="export-save">Exportar save</button><label class="import-save">Importar save<input id="import-save" type="file" accept="application/json,.json"></label></div><details class="save-text-import"><summary>Restaurar save por texto</summary><label>JSON do save<textarea id="import-save-text" aria-label="JSON do save" rows="4" placeholder="Cole aqui o conteúdo do arquivo de save"></textarea></label><button id="import-save-text-button">Validar e restaurar</button></details><div id="restore-confirmation" hidden><p id="restore-description"></p><button id="confirm-restore">Confirmar restauração</button><button id="cancel-restore">Cancelar restauração</button></div><p id="save-feedback" role="status"></p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>I · Inventário</span><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
 
 const el = (id: string) => document.getElementById(id)!;
-const put = (id: string, value: string | number) => { el(id).textContent = String(value); };
+const put = (id: string, value: string | number) => { const target=el(id),text=String(value);if(target.textContent!==text)target.textContent=text; };
 function togglePanel(id: string | null, trigger?: HTMLElement) {
+  if(id==='merchant-panel'&&!inVillage){log('Visite Myourmiles na vila para negociar.');return;}
   if(id==='village-panel'&&!inVillage){enterVillage();return;}
   const next = activePanel === id ? null : id;
   document.querySelectorAll<HTMLElement>('.game-window').forEach(p => p.hidden = p.id !== next);
   document.querySelectorAll<HTMLElement>('[data-panel]').forEach(b => { b.setAttribute('aria-expanded', String(b.dataset.panel === next)); b.setAttribute('aria-controls', b.dataset.panel!); });
   activePanel = next;
-  if(next==='village-panel')renderMenus();
+  if(next){pendingLoot=0;renderMenus();}
   if(next)chime();
   if (next) { panelTrigger = trigger ?? panelTrigger; document.querySelector<HTMLElement>(`#${next} .close-window`)?.focus({ preventScroll: true }); }
   else panelTrigger?.focus({ preventScroll: true });
@@ -126,25 +131,44 @@ function log(message: string, special = false) {
   const row = document.createElement('p'), time = document.createElement('time');
   time.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   row.append(time, document.createTextNode(message)); if (special) row.className = 'special';
+  const journalBody=el('log').closest<HTMLElement>('.window-body'),oldTop=journalBody?.scrollTop??0,oldHeight=journalBody?.scrollHeight??0;
   el('log').prepend(row); while (el('log').children.length > 40) el('log').lastElementChild?.remove();
+  if(journalBody&&oldTop>0)journalBody.scrollTop=oldTop+journalBody.scrollHeight-oldHeight;
   if(special)chime();
   put('notice-text', message); el('notice').classList.toggle('special-notice', special);
 }
-function renderMenus() {
+let pendingLoot=0;
+function updateLiveCounters(){
+ put('resources',`${state.coins} MOEDAS · ${state.essence} ESSÊNCIAS · ${state.bossWins} ${state.bossWins===1?'TROFÉU':'TROFÉUS'}`);
+ put('journey-objective','◆ '+nextObjective(state).text);
+ put('inventory-coins',`◉ ${state.coins} moedas`);
+ put('collection',`${state.inventory.length} cópias · ${state.coins} moedas`);
+ put('pending-loot-text',pendingLoot?`${pendingLoot} ${pendingLoot===1?'nova cópia recebida':'novas cópias recebidas'} na mochila`:'Mochila atualizada · caça independente');
+ el('pending-loot').classList.toggle('has-new',pendingLoot>0);el('show-new-loot').style.visibility=pendingLoot?'visible':'hidden';
+}
+function receiveRewards(copies=0){
+ if(activePanel&&copies>0)pendingLoot+=copies;
+ updateLiveCounters();
+}
+function renderMenus(){preserveMenuState(activePanel?el(activePanel):null,renderActiveMenu);}
+function renderActiveMenu() {
   const focused=document.activeElement as HTMLElement|null,focusId=focused?.id;
   const cursor=focused instanceof HTMLInputElement&&focused.type==='search'?focused.selectionStart:null;
   const panelScroll=activePanel?document.querySelector<HTMLElement>(`#${activePanel} .window-body`)?.scrollTop:undefined;
 
   const bossActive = scene?.bossActive ?? false;
   put('journey-objective','◆ '+nextObjective(state).text);
-  renderVillage(state,bossActive,()=>{save();renderMenus();villageMap.refresh();scene.renderHud();},message=>log(message,true));
+  if(activePanel==='village-panel')renderVillage(state,bossActive,()=>{save();renderMenus();villageMap.refresh();scene.renderHud();},message=>log(message,true));
   put('resources', `${state.coins} MOEDAS · ${state.essence} ESSÊNCIAS · ${state.bossWins} ${state.bossWins === 1 ? 'TROFÉU' : 'TROFÉUS'}`);
-  put('equipped-name', state.equipped.length ? state.equipped.map(id => skills[id].icon).join('  ') + ` · ${state.equipped.length}/3` : 'Espaços vazios');
+  el('equipped-name').innerHTML=state.equipped.length?state.equipped.map(id=>skillIcon(id)).join('')+`<small>${state.equipped.length}/3</small>`:'Espaços vazios';
   el('equipped-button').title = state.equipped.map(id => skills[id].name).join(' + ') || 'Escolher habilidades';
   put('build-hint',bossActive?'Equipamentos, habilidades e negociações travados durante o desafio.':'Cada slot usa uma cópia específica. Clique no slot e escolha um item da mochila.');
-  const inventoryChanged=()=>{scene.resetSkillTimers();save();renderMenus();scene.renderHud();};
-  renderItemMenus(state,bossActive,inventoryChanged,message=>log(message,true));
-  renderInventory(state,bossActive,inventoryChanged,message=>log(message,true));
+  const inventoryChanged=()=>{save();renderMenus();scene.renderHud();};
+  if(activePanel==='skills-panel'||activePanel==='fusion-panel')renderItemMenus(state,bossActive,inventoryChanged,message=>log(message,true),activePanel==='skills-panel'?'skills':'fusion');
+  if(activePanel==='inventory-panel')renderInventory(state,bossActive,inventoryChanged,message=>log(message,true));
+  if(activePanel==='merchant-panel')renderMerchant(state,bossActive,()=>inVillage,inventoryChanged,message=>log(message,true));
+  updateLiveCounters();
+  if(activePanel!=='boss-panel')return;
   const discoveries = kinds.filter(k => state.unlocked[k]).length;
   put('boss-requirements', state.level < 3 || discoveries < 3 ? `Para desafiar: nível 3 (${state.level}/3) e 3 habilidades absorvidas (${discoveries}/3).` : `Desafio disponível · ${state.equipped.length}/3 habilidades equipadas · ${state.bossWins} ${state.bossWins === 1 ? 'vitória' : 'vitórias'}.`);
   put('boss-result', lastBossResult);
@@ -303,7 +327,7 @@ class Meadow extends WorldScene {
     if (reward.levels) { this.health = maxHp(state); log(`Nível ${state.level}! Ataque e vitalidade aumentaram.`, true); }
     const token = this.generation; this.time.delayedCall(3000, () => { if (token === this.generation && !this.bossActive) this.spawn(k,false,enemy.zone); });
     const orb = this.add.circle(x, y, 4, creatures[k].color).setDepth(30); this.tweens.add({ targets: orb, x: this.player.x, y: this.player.y, scale: 0, duration: 400, onComplete: () => orb.destroy() });
-    lastHuntedKind=k;observedKills++;save(); renderMenus();
+    lastHuntedKind=k;observedKills++;save();receiveRewards(reward.item?1:0);
   }
   takePlayerDamage(damage: number, style: AttackSpec['style'], color: number) {
     this.health -= damage; this.playerHit = 180; this.player.setTint(0xffc8ca);
@@ -406,6 +430,7 @@ class Meadow extends WorldScene {
     }
   }
   renderHud() {
+    updateLiveCounters();
     const fx = effects(state);
     put('level', `Nível ${state.level} · Slime primordial`); put('hp-text', `${Math.ceil(this.health)} / ${maxHp(state)}`); put('xp-text', `${state.xp} / ${neededXp(state)}`);
     put('attack', Math.round(attack(state)*fx.damageBonus)); put('defense', `${Math.round(fx.defense * 100)}%`); put('kills', state.kills);
@@ -432,7 +457,7 @@ class Meadow extends WorldScene {
     if(document.hidden)return;
     const dt = Math.min(delta, 100);
     if (paused) { this.renderHud(); return; }
-    if (this.recovering > 0) { this.recovering -= dt; if (this.recovering <= 0) { this.health = maxHp(state); log('Vitalidade restaurada. Retomando a caça.'); renderMenus(); } this.renderHud(); return; }
+    if (this.recovering > 0) { this.recovering -= dt; if (this.recovering <= 0) { this.health = maxHp(state); log('Vitalidade restaurada. Retomando a caça.');receiveRewards(); } this.renderHud(); return; }
     this.springAt=Math.max(0,(state.springReadyAt??0)-Date.now());
     const fx = effects(state), token = this.generation;
     this.playerPose = Math.max(0, this.playerPose - dt); this.playerHit = Math.max(0, this.playerHit - dt);
@@ -504,13 +529,13 @@ class Meadow extends WorldScene {
       if (this.bossActive) { this.finishBoss('loss'); return; }
       this.strikes = []; this.playerAttack = null; this.combatFX.clear(); for (const e of this.enemies) { e.action = null; e.sprite.setPosition(e.x, e.y).setScale(e.baseScale).setAngle(0).play(`${e.boss ? this.caveBoss?'caveBoss':'guardian' : e.kind}-idle`); } observationStart=Date.now();observedKills=0;this.health = 0; this.recovering = 5000; this.target = null; this.player.setPosition(this.area==='cave'?center(this.sector).x:400,this.area==='cave'?center(this.sector).y:240);this.path=[];
       for (const e of this.enemies) { e.poisonUntil = 0; e.attackAt = 1500; }
-      log('Vitalidade esgotada. Recuperando por 5 s, sem perder conhecimento.'); renderMenus();
+      log('Vitalidade esgotada. Recuperando por 5 s, sem perder conhecimento.');receiveRewards();
     }
     this.uiAt -= dt; if (this.uiAt <= 0) { this.renderHud(); this.uiAt = 100; }
   }
 }
 const scene = new Meadow('Meadow');
-const villageMap=new VillageMap(()=>state.village,id=>openVillageBuilding(id));
+const villageMap=new VillageMap(()=>state.village,id=>openVillageBuilding(id),()=>openMerchant());
 function enterVillage(){
  if(scene.bossActive){log('Recue do desafio para visitar a vila.');return;}
  if(inVillage){togglePanel(null);villageMap.centerVillage();return;}
@@ -566,8 +591,15 @@ el('confirm-restore').onclick=()=>{if(!pendingRestore)return;try{restoringSave=t
 el('cancel-restore').onclick=()=>{pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback','Restauração cancelada.');};
 (el('import-save') as HTMLInputElement).onchange=async event=>{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw new Error('Arquivo muito grande.');stageRestore(await file.text());}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível importar.');}finally{input.value='';}};
 setInterval(()=>{if(!document.hidden)save();},15000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);renderMenus();}}catch{}observationStart=Date.now();observedKills=0;save();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);receiveRewards();}}catch{}observationStart=Date.now();observedKills=0;save();}});
 
 setTimeout(()=>{if(offlineSummary){log(offlineSummary,true);offlineSummary='';}},1000);
 
 el('import-save-text-button').onclick=()=>{try{stageRestore((el('import-save-text') as HTMLTextAreaElement).value);}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível restaurar o save.');}};
+
+el('show-new-loot').onclick=()=>{pendingLoot=0;renderMenus();};
+document.addEventListener('slime:bag-rendered',()=>{pendingLoot=0;updateLiveCounters();});
+
+function openMerchant(){if(!inVillage){log('Visite Myourmiles na vila para negociar.');return;}if(!state.village.founded){openVillageBuilding('workshop');log('Estabeleça a vila para receber a caravana.');return;}if(activePanel==='merchant-panel')renderMenus();else togglePanel('merchant-panel');save();}
+el('visit-merchant').onclick=openMerchant;
+setInterval(()=>{if(inVillage&&activePanel==='merchant-panel'&&tickMerchant(state))save();},1000);

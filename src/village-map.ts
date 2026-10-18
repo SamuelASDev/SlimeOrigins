@@ -5,14 +5,15 @@ export const VILLAGE_WIDTH = 1536, VILLAGE_HEIGHT = 1024;
 export const villageResidents = [
  {id:'workshop',texture:'npc-kaijin-anime-v2',name:'Kaijin',service:'Forja e equipamentos',x:350,y:530,height:86},
  {id:'lab',texture:'npc-benimaru-anime-v2',name:'Benimaru',service:'Análise e síntese',x:768,y:390,height:100},
+ {id:'merchant',texture:'npc-myourmiles-anime-v1',name:'Myourmiles',service:'Empório e caravana',x:985,y:685,height:90},
  {id:'alchemy',texture:'npc-shuna-anime-v2',name:'Shuna',service:'Alquimia e tônicos',x:1210,y:535,height:96},
 ] as const;
 
 /** Source-preserving generated background and alpha sprites; UI remains separate from the art. */
 export class VillageMap extends Phaser.Scene {
  private down:{lastX:number;lastY:number;distance:number}|null=null;
- private labels=new Map<Building,Phaser.GameObjects.Text>();
- constructor(private readVillage:()=>Village,private openBuilding:(id:Building)=>void){super('VillageMap');}
+ private labels=new Map<Building|'merchant',Phaser.GameObjects.Text>();
+ constructor(private readVillage:()=>Village,private openBuilding:(id:Building)=>void,private openMerchant:()=>void){super('VillageMap');}
  preload(){
   this.load.image('village-tempest','/assets/sprites/village-tempest-anime-v2.png');
   for(const p of villageResidents)this.load.atlas(p.texture,`/assets/sprites/${p.texture}.png`,`/assets/sprites/${p.texture}.json`);
@@ -35,7 +36,7 @@ export class VillageMap extends Phaser.Scene {
    const zone=this.add.zone(p.x,p.y-35,180,155).setDepth(p.y+1).setInteractive({useHandCursor:true});
    zone.on('pointerover',()=>{sprite.setTint(0xffedc7);marker.setColor('#ffffff');});
    zone.on('pointerout',()=>{sprite.clearTint();marker.setColor('#ffe5a4');});
-   zone.on('pointerup',()=>{if(this.down&&this.down.distance<8)this.openBuilding(p.id);});
+   zone.on('pointerup',()=>{if(this.down&&this.down.distance<8)p.id==='merchant'?this.openMerchant():this.openBuilding(p.id);});
   }
   const camera=this.cameras.main;camera.setBounds(0,0,VILLAGE_WIDTH,VILLAGE_HEIGHT);camera.roundPixels=true;
   const fit=()=>camera.setZoom(Math.max(this.scale.width/1500,this.scale.height/1050));fit();this.centerVillage();this.refresh();
@@ -46,7 +47,7 @@ export class VillageMap extends Phaser.Scene {
   this.input.on('wheel',(_p:unknown,_o:unknown,_x:number,y:number)=>camera.setZoom(Phaser.Math.Clamp(camera.zoom-y*.001,.6,2)));
   this.scale.on('resize',fit);this.events.once('shutdown',()=>this.scale.off('resize',fit));this.events.on('wake',()=>{this.down=null;this.refresh();});
  }
- refresh(){const v=this.readVillage();for(const p of villageResidents)this.labels.get(p.id)?.setText(v.buildings[p.id]?`Instalação · Nv. ${v.buildings[p.id]} · Conversar`:'Projeto disponível · Conversar');}
+ refresh(){const v=this.readVillage();for(const p of villageResidents){if(p.id==='merchant'){this.labels.get(p.id)?.setText('Estoque rotativo · Conversar');continue;}this.labels.get(p.id)?.setText(v.buildings[p.id]?`Instalação · Nv. ${v.buildings[p.id]} · Conversar`:'Projeto disponível · Conversar');}}
  centerVillage(){this.cameras.main.centerOn(768,495);}
  focusBuilding(id:Building){const p=villageResidents.find(p=>p.id===id)!;this.cameras.main.pan(p.x,p.y,300,'Sine.easeInOut');}
 }

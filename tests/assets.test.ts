@@ -28,3 +28,25 @@ test('slime servido no jogo é uma cópia exata do arquivo original', () => {
   const hash = (data: Buffer) => createHash('sha256').update(data).digest('hex');
   assert.equal(hash(readFileSync(new URL(source, sources))), hash(readFileSync(new URL('slime.png', dir))));
 });
+
+test('sprites da vila possuem quatro poses completas e metadados coerentes', () => {
+ for (const name of ['kaijin','benimaru','shuna']) {
+  const file=`npc-${name}-anime-v2`;
+  const png=readFileSync(new URL(`${file}.png`,dir));
+  const atlas=JSON.parse(readFileSync(new URL(`${file}.json`,dir),'utf8'));
+  assert.equal(png.readUInt32BE(16),atlas.meta.size.w);
+  assert.equal(png.readUInt32BE(20),atlas.meta.size.h);
+  assert.deepEqual(Object.keys(atlas.frames),['0','1','2','3']);
+  const logical=atlas.frames['0'].sourceSize;
+  for(const [key,item] of Object.entries(atlas.frames) as [string,any][]){
+   assert.deepEqual(item.sourceSize,logical,`${name}/${key}: animation scale`);
+   const {x,y,w,h}=item.frame;
+   assert.ok(w>0&&h>0&&x>=0&&y>=0&&x+w<=atlas.meta.size.w&&y+h<=atlas.meta.size.h);
+   const col=Number(key)%2,row=Math.floor(Number(key)/2);
+   assert.ok(x>col*atlas.meta.size.w/2&&x+w<(col+1)*atlas.meta.size.w/2,`${name}/${key}: horizontal margin`);
+   assert.ok(y>row*atlas.meta.size.h/2&&y+h<(row+1)*atlas.meta.size.h/2,`${name}/${key}: vertical margin`);
+  }
+ }
+ const map=readFileSync(new URL('village-tempest-anime-v2.png',dir));
+ assert.equal(map.readUInt32BE(16),1536);assert.equal(map.readUInt32BE(20),1024);
+});

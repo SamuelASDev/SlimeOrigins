@@ -392,10 +392,12 @@ class Meadow extends WorldScene {
         offsetX = -action.direction.x * (1 - step.progress) * 2;
       }
       if (step.release) {
+       if(!(enemy.boss&&this.caveBoss)){
         action.aim = { x: this.player.x, y: this.player.y };
         const aimLength = Math.max(1, Phaser.Math.Distance.Between(enemy.x, enemy.y, action.aim.x, action.aim.y));
         action.direction = { x: (action.aim.x - enemy.x) / aimLength, y: (action.aim.y - enemy.y) / aimLength };
         enemy.sprite.setFlipX(action.direction.x < 0);
+       }
         const origin = { x: enemy.x + action.direction.x * 16, y: enemy.y - enemy.visualHeight*.5 };
         const destination = { x: action.aim.x, y: action.aim.y - 14 };
         if (spec.ranged) this.combatFX.shot(spec.style, origin, destination, spec.color, spec.travel);
@@ -404,6 +406,8 @@ class Meadow extends WorldScene {
       }
       if (step.phase === 'done') enemy.action = null;
     } else enemy.sprite.play(`${key}-${moving ? 'walk' : 'idle'}`, true);
+    // The coiled boss animates its neck in the sheet; keep the body planted.
+    if(enemy.boss&&this.caveBoss){offsetX=0;offsetY=0;stretchX=1;stretchY=1;angle=0;}
     const hover = !enemy.boss && ['moth', 'wisp', 'bat'].includes(enemy.kind) ? Math.sin(this.time.now / 220 + enemy.x) * 1.2 : 0;
     enemy.sprite.setPosition(enemy.x + offsetX, enemy.y + offsetY + hover).setScale(enemy.baseScale * stretchX, enemy.baseScale * stretchY).setAngle(angle);
     if (!action && moving) enemy.sprite.setFlipX(this.player.x < enemy.x);

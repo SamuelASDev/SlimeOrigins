@@ -22,13 +22,27 @@ export class VillageMap extends Phaser.Scene {
   for(let x=0;x<1600;x+=44)for(let y=924;y<1020;y+=28)rect(x+(y%16),y,24,4,0x68a5aa);
   rect(740,860,120,220,0x655344);for(let y=864;y<1080;y+=16)rect(744,y,112,10,0xb79b6a);
   rect(764,320,72,560,0xb5a580);rect(380,568,844,64,0xb5a580);
+  // Small homes, market stalls and a timber palisade frame the civic district.
+  for(const x of [120,248,1192,1320]){
+   rect(x,304,100,84,0xc8bc96);rect(x+8,380,84,8,0x715344);
+   rect(x+40,348,24,40,0x534537);rect(x+12,332,16,20,0x668e96);
+   for(let r=0;r<5;r++)rect(x+20-r*8,272+r*12,60+r*16,12,r%2?0x3e6073:0x507c8a);
+   rect(x+36,388,28,180,0x9c9674);
+  }
+  for(const x of [460,572]){
+   rect(x,724,76,40,0x72583d);rect(x-4,708,84,20,0xd1b66e);
+   for(let i=0;i<4;i++)rect(x+i*20,708,10,20,0x7e5350);
+   rect(x+8,738,12,12,0xc18853);rect(x+28,738,12,12,0x8db275);rect(x+48,738,12,12,0xbca465);
+  }
+  for(let x=76;x<1540;x+=24){rect(x,222,12,28,0x5c5039);rect(x,218,8,8,0x9b8a60);}
+  rect(76,238,1464,8,0x776447);
   rect(644,612,312,160,0x8d927d);
   for(let y=616;y<772;y+=20)for(let x=648;x<956;x+=28)rect(x,y,24,16,(x+y)%3?0xa7a58c:0xb6b198);
   for(const p of places){
    const x=p.x-108,y=p.y-176;
    rect(x+12,y+30,224,180,0x2c483b);rect(x,y,216,184,0xd7c5a0);
    rect(x,y+80,216,12,0x715344);rect(x+16,y+64,12,120,0x715344);rect(x+188,y+64,12,120,0x715344);
-   for(let r=0;r<7;r++){const w=264-r*20;rect(p.x-w/2,y-24+r*12,w,12,r%2?0x344f65:0x466e83);}
+   for(let r=0;r<7;r++){const w=144+r*20;rect(p.x-w/2,y-24+r*12,w,12,r%2?0x344f65:0x466e83);}
    rect(x+88,y+120,40,64,0x483e37);rect(x+36,y+110,32,32,0x415761);rect(x+148,y+110,32,32,0x415761);
    rect(x+40,y+114,24,4,0xb5d1ca);rect(x+152,y+114,24,4,0xb5d1ca);
    this.add.text(p.x,y+76,p.name,{fontFamily:'monospace',fontSize:'12px',color:'#fff1ca',backgroundColor:'#293f3b',padding:{x:6,y:5}}).setOrigin(.5);
@@ -37,6 +51,7 @@ export class VillageMap extends Phaser.Scene {
    const art=this.add.graphics();art.fillStyle(0x263d32,.5);art.fillRect(-16,17,32,8);art.fillStyle(0x40353c);art.fillRect(-10,6,8,14);art.fillRect(2,6,8,14);art.fillStyle(p.color);art.fillRect(-14,-10,28,24);art.fillStyle(0xe4bd90);art.fillRect(-10,-26,20,20);art.fillStyle(p.id==='lab'?0xcc5743:p.id==='alchemy'?0xf0c7dd:0xb7b4ac);art.fillRect(-14,-30,28,12);art.fillStyle(0x29323c);art.fillRect(-6,-16,4,4);art.fillRect(4,-16,4,4);npc.add(art);
    const marker=this.add.text(0,-56,'◆',{fontSize:'20px',color:'#f3d78e'}).setOrigin(.5);npc.add(marker);
    this.tweens.add({targets:marker,y:-62,duration:900,yoyo:true,repeat:-1});
+   this.tweens.add({targets:art,y:-2,duration:1200+p.x,yoyo:true,repeat:-1,ease:'Sine.InOut'});
    npc.add(this.add.text(0,40,p.person,{fontFamily:'monospace',fontSize:'13px',color:'#fff3d2',backgroundColor:'#233b32',padding:{x:8,y:5}}).setOrigin(.5));
    this.add.zone(p.x,p.y+28,210,120).setInteractive({useHandCursor:true}).on('pointerup',()=>{if(this.down&&this.down.distance<8)this.openBuilding(p.id);});
   }

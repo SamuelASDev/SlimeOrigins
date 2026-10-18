@@ -1,5 +1,6 @@
 {
   "tool": "image_gen built-in",
+  "npc_layout_refinement": "Edit target: supplied NPC sprite sheet. Preserve exactly this character design, clothing, face, pixel art style, and all four different poses. Fix ONLY layout: make every character MUCH SMALLER, at 65 percent of its current scale inside each of the four cells. Canvas square, exactly 2x2 equal square cells. Each sprite centered in its own cell, feet baseline at 80 percent down each cell. At least 70 pixels of fully transparent empty margin above, below, left and right of EVERY sprite within its own cell. There must be a wide empty transparent gutter at the horizontal and vertical center lines. No pixel may cross the center lines or touch outer canvas edges. All hair, horns, hands, hammer and feet fully visible and separate. True alpha transparency. No text, no grid lines, no extra poses, do not change pixel shading or design.",
   "reference": "public/assets/sprites/wolf-anime-v2.png",
   "assets": [
     {

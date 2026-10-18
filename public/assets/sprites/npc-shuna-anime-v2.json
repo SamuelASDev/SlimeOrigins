@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 204,
+        "y": 176,
+        "w": 225,
+        "h": 365
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 30,
+        "y": 7,
+        "w": 225,
+        "h": 365
+      },
+      "sourceSize": {
+        "w": 296,
+        "h": 376
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 814,
+        "y": 176,
+        "w": 235,
+        "h": 365
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 22,
+        "y": 7,
+        "w": 235,
+        "h": 365
+      },
+      "sourceSize": {
+        "w": 296,
+        "h": 376
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 202,
+        "y": 752,
+        "w": 255,
+        "h": 364
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 8,
+        "w": 255,
+        "h": 364
+      },
+      "sourceSize": {
+        "w": 296,
+        "h": 376
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 811,
+        "y": 750,
+        "w": 282,
+        "h": 368
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 10,
+        "y": 4,
+        "w": 282,
+        "h": 368
+      },
+      "sourceSize": {
+        "w": 296,
+        "h": 376
+      }
+    }
+  },
+  "meta": {
+    "image": "npc-shuna-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

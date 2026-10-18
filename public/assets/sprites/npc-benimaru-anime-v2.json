@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 210,
+        "y": 173,
+        "w": 215,
+        "h": 364
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 20,
+        "y": 5,
+        "w": 215,
+        "h": 364
+      },
+      "sourceSize": {
+        "w": 250,
+        "h": 373
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 849,
+        "y": 172,
+        "w": 210,
+        "h": 365
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 25,
+        "y": 4,
+        "w": 210,
+        "h": 365
+      },
+      "sourceSize": {
+        "w": 250,
+        "h": 373
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 220,
+        "y": 753,
+        "w": 231,
+        "h": 359
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 15,
+        "y": 10,
+        "w": 231,
+        "h": 359
+      },
+      "sourceSize": {
+        "w": 250,
+        "h": 373
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 836,
+        "y": 753,
+        "w": 228,
+        "h": 359
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 13,
+        "y": 10,
+        "w": 228,
+        "h": 359
+      },
+      "sourceSize": {
+        "w": 250,
+        "h": 373
+      }
+    }
+  },
+  "meta": {
+    "image": "npc-benimaru-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

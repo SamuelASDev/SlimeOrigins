@@ -1,3 +1,4 @@
+import { inventoryMarkup, renderInventory } from './inventory-ui';
 import { offlineReward, decodeSave, nextObjective, type Checkpoint } from './journey';
 import { VillageMap } from './village-map';
 import type { Building } from './village';
@@ -31,8 +32,10 @@ let priority: Kind | 'any' = 'any';
 let activePanel: string | null = null;
 let panelTrigger: HTMLElement | null = null;
 let saveWarning = false;
+let restoringSave = false;
 let lastBossResult = '';
 function save() {
+  if(restoringSave)return;
   try { const seconds=(Date.now()-observationStart)/1000;
     const interval=observedKills>0?seconds/observedKills:0;
     const checkpoint:Checkpoint={at:Date.now(),kind:lastHuntedKind,interval,enabled:!paused&&!inVillage&&!scene?.bossActive&&scene?.recovering===0&&seconds>=60&&observedKills>=3};
@@ -56,6 +59,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="village-map-controls frame"><span>ARRASTE · RODA PARA ZOOM · CONVERSE COM OS MORADORES</span><div><button id="leave-village">← Voltar à caça</button><button id="center-village">⌖ Centralizar</button><button data-village-place="workshop">Oficina</button><button data-village-place="lab">Laboratório</button><button data-village-place="alchemy">Alquimia</button></div></div><div class="world-title" aria-hidden="true"><span>SLIME · ORIGENS</span><small>ECOS DA EVOLUÇÃO</small></div>
   <section id="boss-hud" class="boss-hud frame" aria-label="Vida do chefe" hidden><div><strong id="boss-name">Serpente Negra Anciã</strong><span id="boss-hp-text"></span></div><div class="meter boss-meter"><div id="boss-hp-bar"></div></div><p id="boss-action"></p><button id="retreat">Recuar do desafio</button></section>
   <nav class="menu-rail" aria-label="Menus do jogo"><button class="menu-button" data-panel="village-panel" title="Vila (V)"><span>⌂</span>Vila<kbd>V</kbd></button>
+    <button class="menu-button" data-panel="inventory-panel" title="Inventário (I)"><span>▣</span>Inventário<kbd>I</kbd></button>
     <button class="menu-button" data-panel="skills-panel" title="Habilidades (H)"><span>◈</span>Habilidades<kbd>H</kbd></button>
     <button class="menu-button" data-panel="fusion-panel" title="Fusões (F)"><span>✦</span>Fusões<kbd>F</kbd></button>
     <button class="menu-button" data-panel="boss-panel" title="Chefe (B)"><span>♜</span>Chefe<kbd>B</kbd></button>
@@ -69,10 +73,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <button id="pause" class="hunt-button">Ⅱ Pausar caça</button>
       <div class="hunt-priority"><label for="priority">PRIORIDADE DA CAÇA</label><select id="priority"><option value="any">Mais próximo</option>${kinds.map(k => `<option value="${k}">${creatures[k].name}</option>`).join('')}</select></div>
       <button id="equipped-button" data-panel="skills-panel" title="Trocar habilidades"><span class="label">BUILD · 3 ESPAÇOS</span><span id="equipped-name">Espaços vazios</span></button>
-    </section><span class="save-status">● SAVE LOCAL · PROTÓTIPO 0.2</span>
+    </section><span class="save-status">● SAVE LOCAL · PROTÓTIPO 0.4</span>
   </div>
 </div>
 ${villageMarkup}
+${inventoryMarkup}
 <section id="map-panel" class="game-window frame" role="dialog" aria-labelledby="map-title" hidden>
  <div class="window-header"><div><p class="label">CAPÍTULO 01 · O DESPERTAR</p><h2 id="map-title">Caverna do Selo</h2></div><button class="close-window" aria-label="Fechar mapa" >×</button></div>
  <div class="window-body"><p class="cave-intro">Sob Jura, a aura do Dragão da Tempestade alimenta monstros e minerais. Explore os corredores, absorva habilidades e encontre o selo de Veldora.</p>
@@ -85,13 +90,13 @@ ${villageMarkup}
 <section id="skills-panel" class="game-window frame" role="dialog" aria-labelledby="skills-title" hidden>
   <div class="window-header"><div><p class="label">PREDADOR / ANÁLISE</p><h2 id="skills-title">Habilidades absorvidas</h2></div><button class="close-window" aria-label="Fechar habilidades">×</button></div>
   <div class="window-body"><div class="build-summary"><div class="heading-row"><span class="label">SUA BUILD</span><span id="capacity"></span></div><div id="slot" class="build-slots"></div><p class="hint" id="build-hint"></p></div>
-  <div class="heading-row"><span class="label">REGISTRO DE ESSÊNCIAS</span><span id="collection"></span></div><div id="skills"></div><p class="hint">25% de absorção por abate; no máximo oito abates entre cópias. Você pode guardar e combinar habilidades repetidas.</p></div>
+  <div class="heading-row"><span class="label">REGISTRO DE ESSÊNCIAS</span><span id="collection"></span></div><div id="skills"></div><p class="hint">Cada habilidade é uma cópia individual, que pode ser equipada, fundida ou vendida. 25% de absorção por abate; no máximo oito abates entre cópias. Você pode guardar e combinar habilidades repetidas.</p></div>
   <div class="window-footer">✧ Três espaços, seis pontos de capacidade. A caça continua ao fundo.</div>
 </section>
 <section id="fusion-panel" class="game-window frame" role="dialog" aria-labelledby="fusion-title" hidden><div class="window-header"><div><p class="label">PREDADOR / SÍNTESE</p><h2 id="fusion-title">Câmara de síntese</h2></div><button class="close-window" aria-label="Fechar fusões">×</button></div><div class="window-body">${synthesisMarkup}</div><div class="window-footer">Dois ingredientes · resultado descoberto ao combinar</div></section>
 <section id="boss-panel" class="game-window frame" role="dialog" aria-labelledby="boss-title" hidden><div class="window-header"><div><p class="label" id="boss-area-label">DESAFIO DA CAVERNA</p><h2 id="boss-title">Serpente Negra Anciã</h2></div><button class="close-window" aria-label="Fechar chefe">×</button></div><div class="window-body"><div class="boss-art" aria-hidden="true">♜</div><p id="boss-description" class="boss-description">Um antigo besouro coberto de pedra guarda o coração da floresta. Escolha sua build antes de entrar na arena.</p><div id="boss-traits" class="boss-traits"><p><b>Carapaça pétrea</b> · recebe 60% menos dano físico. Veneno ignora a defesa; água causa +25% de dano.</p><p><b>Impacto sísmico</b> · avisa antes de atacar uma área. Instinto caçador recua automaticamente; Véu de névoa reduz o impacto.</p><p><b>Preparação</b> · nível 4 recomendado. Você entra com vida cheia e não pode trocar a build durante o desafio.</p></div><p id="boss-requirements" class="hint"></p><p id="boss-result" class="boss-result"></p><button id="challenge" class="hunt-button">Desafiar guardião</button><p class="hint">Recompensa: 10 essências, 100 EXP e 1 troféu por vitória. Uma derrota não remove seu progresso. O poder do guardião acompanha o nível de entrada até o nível 8.</p></div></section>
 <section id="journal-panel" class="game-window frame" role="dialog" aria-labelledby="journal-title" hidden><div class="window-header"><div><p class="label">GRANDE SÁBIO</p><h2 id="journal-title">Diário da expedição</h2></div><button class="close-window" aria-label="Fechar diário">×</button></div><div class="window-body"><div id="log" class="log" role="log"></div></div></section>
-<section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Expedições offline usam 50% do ritmo observado após 60 segundos e 3 abates de caçada ativa, com limite de 2 horas e 240 abates. Não exploram novas regiões nem enfrentam chefes.</p><div class="save-tools"><button id="sound-toggle">Áudio</button><button id="export-save">Exportar save</button><label class="import-save">Importar save<input id="import-save" type="file" accept="application/json,.json"></label></div><p id="save-feedback" role="status"></p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
+<section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Expedições offline usam 50% do ritmo observado após 60 segundos e 3 abates de caçada ativa, com limite de 2 horas e 240 abates. Não exploram novas regiões nem enfrentam chefes.</p><div class="save-tools"><button id="sound-toggle">Áudio</button><button id="export-save">Exportar save</button><label class="import-save">Importar save<input id="import-save" type="file" accept="application/json,.json"></label></div><details class="save-text-import"><summary>Restaurar save por texto</summary><label>JSON do save<textarea id="import-save-text" aria-label="JSON do save" rows="4" placeholder="Cole aqui o conteúdo do arquivo de save"></textarea></label><button id="import-save-text-button">Validar e restaurar</button></details><div id="restore-confirmation" hidden><p id="restore-description"></p><button id="confirm-restore">Confirmar restauração</button><button id="cancel-restore">Cancelar restauração</button></div><p id="save-feedback" role="status"></p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>I · Inventário</span><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
 
 const el = (id: string) => document.getElementById(id)!;
 const put = (id: string, value: string | number) => { el(id).textContent = String(value); };
@@ -111,9 +116,9 @@ document.querySelectorAll<HTMLButtonElement>('[data-panel="village-panel"]').for
 
 document.querySelectorAll<HTMLButtonElement>('.close-window').forEach(b => b.onclick = () => togglePanel(null));
 window.addEventListener('keydown', event => {
-  if (event.target instanceof HTMLSelectElement || event.target instanceof HTMLInputElement || event.ctrlKey || event.altKey || event.metaKey || event.repeat) return;
+  if (event.target instanceof HTMLSelectElement || event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.ctrlKey || event.altKey || event.metaKey || event.repeat) return;
   if(event.key.toLowerCase()==='v'){event.preventDefault();if(inVillage)leaveVillage();else enterVillage();return;}
-  const panel = ({ v:'village-panel', h: 'skills-panel', f: 'fusion-panel', b: 'boss-panel', j: 'journal-panel', o: 'settings-panel' } as Record<string, string>)[event.key.toLowerCase()];
+  const panel = ({ i:'inventory-panel', v:'village-panel', h: 'skills-panel', f: 'fusion-panel', b: 'boss-panel', j: 'journal-panel', o: 'settings-panel' } as Record<string, string>)[event.key.toLowerCase()];
   if (event.key === 'Escape') togglePanel(null);
   else if (panel) { event.preventDefault(); togglePanel(panel, document.querySelector<HTMLElement>(`[data-panel="${panel}"]`)!); }
 });
@@ -126,17 +131,20 @@ function log(message: string, special = false) {
   put('notice-text', message); el('notice').classList.toggle('special-notice', special);
 }
 function renderMenus() {
+  const focused=document.activeElement as HTMLElement|null,focusId=focused?.id;
+  const cursor=focused instanceof HTMLInputElement&&focused.type==='search'?focused.selectionStart:null;
+  const panelScroll=activePanel?document.querySelector<HTMLElement>(`#${activePanel} .window-body`)?.scrollTop:undefined;
+
   const bossActive = scene?.bossActive ?? false;
   put('journey-objective','◆ '+nextObjective(state).text);
   renderVillage(state,bossActive,()=>{save();renderMenus();villageMap.refresh();scene.renderHud();},message=>log(message,true));
-  put('resources', `${state.essence} ESSÊNCIAS · ${state.bossWins} ${state.bossWins === 1 ? 'TROFÉU' : 'TROFÉUS'}`);
+  put('resources', `${state.coins} MOEDAS · ${state.essence} ESSÊNCIAS · ${state.bossWins} ${state.bossWins === 1 ? 'TROFÉU' : 'TROFÉUS'}`);
   put('equipped-name', state.equipped.length ? state.equipped.map(id => skills[id].icon).join('  ') + ` · ${state.equipped.length}/3` : 'Espaços vazios');
   el('equipped-button').title = state.equipped.map(id => skills[id].name).join(' + ') || 'Escolher habilidades';
-  put('capacity', `${state.equipped.length}/3 espaços · ${energyUsed(state)}/${CAPACITY} magia`);
-  el('slot').innerHTML = Array.from({ length: 3 }, (_, i) => { const id = state.equipped[i]; return id ? `<button data-equipped="${id}" ${bossActive?'disabled':''}><span>${skills[id].icon}</span><b>${skills[id].name}</b><small>Nv. ${skillRank(state,id)} · ${skills[id].cost} magia · remover</small></button>` : `<div class="empty-slot"><span>+</span><small>Espaço ${i+1}</small></div>`; }).join('');
-  document.querySelectorAll<HTMLButtonElement>('[data-equipped]').forEach(b=>b.onclick=()=>{if(!scene.bossActive){toggleEquip(state,b.dataset.equipped as SkillId);save();renderMenus();}});
-  put('build-hint',bossActive?'Build travada durante o desafio.':'A build usa a melhor cópia de cada habilidade. Remova uma para liberar espaço.');
-  renderItemMenus(state,bossActive,()=>{scene.resetSkillTimers();save();renderMenus();},message=>log(message,true));
+  put('build-hint',bossActive?'Equipamentos, habilidades e negociações travados durante o desafio.':'Cada slot usa uma cópia específica. Clique no slot e escolha um item da mochila.');
+  const inventoryChanged=()=>{scene.resetSkillTimers();save();renderMenus();scene.renderHud();};
+  renderItemMenus(state,bossActive,inventoryChanged,message=>log(message,true));
+  renderInventory(state,bossActive,inventoryChanged,message=>log(message,true));
   const discoveries = kinds.filter(k => state.unlocked[k]).length;
   put('boss-requirements', state.level < 3 || discoveries < 3 ? `Para desafiar: nível 3 (${state.level}/3) e 3 habilidades absorvidas (${discoveries}/3).` : `Desafio disponível · ${state.equipped.length}/3 habilidades equipadas · ${state.bossWins} ${state.bossWins === 1 ? 'vitória' : 'vitórias'}.`);
   put('boss-result', lastBossResult);
@@ -150,6 +158,9 @@ function renderMenus() {
   else el('boss-traits').innerHTML='<p><b>Carapaça pétrea</b> · reduz dano físico. Água e veneno atravessam a defesa.</p><p><b>Impacto sísmico</b> · preparação marcada no chão. Instinto caçador permite recuar.</p>';
 
   (el('priority') as HTMLSelectElement).disabled = bossActive;
+  if(focusId){const replacement=document.getElementById(focusId);if(replacement&&replacement!==focused){replacement.focus({preventScroll:true});if(cursor!==null&&replacement instanceof HTMLInputElement&&replacement.type==='search')replacement.setSelectionRange(cursor,cursor);}}
+  if(panelScroll!==undefined&&activePanel){const body=document.querySelector<HTMLElement>(`#${activePanel} .window-body`);if(body)body.scrollTop=panelScroll;}
+
 }
 
 type Enemy = { zone: number; x: number; y: number; baseScale: number; action: { clock: AttackClock; aim: { x: number; y: number }; direction: { x: number; y: number } } | null; kind: Kind; boss: boolean; rooted: number; sprite: Phaser.GameObjects.Sprite; shadow: Phaser.GameObjects.Ellipse; hitUntil: number; hp: number; max: number; bar: Phaser.GameObjects.Graphics; attackAt: number; poisonUntil: number; poisonPower: number; poisonAt: number; wet: number };
@@ -549,8 +560,14 @@ put('sound-toggle',soundEnabled?'Áudio: ligado':'Áudio: desligado');
 el('sound-toggle').onclick=()=>{soundEnabled=!soundEnabled;localStorage.setItem('slime-sound',String(soundEnabled));put('sound-toggle',soundEnabled?'Áudio: ligado':'Áudio: desligado');chime();};
 el('journey-objective').onclick=()=>{const goal=nextObjective(state);if(goal.panel==='village-panel'){enterVillage();openVillageBuilding(!state.village.buildings.workshop?'workshop':!state.village.buildings.lab?'lab':'alchemy');}else togglePanel(goal.panel);};
 el('export-save').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({game:'slime-origins',state},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='slime-origins-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);put('save-feedback','Save exportado. Guarde o arquivo para restaurar sua aventura.');};
-(el('import-save') as HTMLInputElement).onchange=async event=>{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw new Error('Arquivo muito grande.');const loaded=decodeSave(await file.text());if(!confirm(`Substituir a aventura atual pelo save de nível ${loaded.level}, com ${loaded.kills} abates?`))return;localStorage.setItem(SAVE,JSON.stringify(loaded));location.reload();}catch(error){put('save-feedback',error instanceof Error?error.message:'Não foi possível importar.');}finally{input.value='';}};
+let pendingRestore:ReturnType<typeof decodeSave>|null=null;
+function stageRestore(text:string){pendingRestore=decodeSave(text);put('restore-description',`Substituir a aventura atual pelo save de nível ${pendingRestore.level}, com ${pendingRestore.kills} abates? O progresso atual será substituído.`);el('restore-confirmation').hidden=false;put('save-feedback','Arquivo validado. Confirme a restauração abaixo.');}
+el('confirm-restore').onclick=()=>{if(!pendingRestore)return;try{restoringSave=true;localStorage.setItem(SAVE,JSON.stringify(pendingRestore));location.reload();}catch{restoringSave=false;put('save-feedback','Não foi possível gravar o save.');}};
+el('cancel-restore').onclick=()=>{pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback','Restauração cancelada.');};
+(el('import-save') as HTMLInputElement).onchange=async event=>{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw new Error('Arquivo muito grande.');stageRestore(await file.text());}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível importar.');}finally{input.value='';}};
 setInterval(()=>{if(!document.hidden)save();},15000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);renderMenus();}}catch{}observationStart=Date.now();observedKills=0;save();}});
 
 setTimeout(()=>{if(offlineSummary){log(offlineSummary,true);offlineSummary='';}},1000);
+
+el('import-save-text-button').onclick=()=>{try{stageRestore((el('import-save-text') as HTMLTextAreaElement).value);}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível restaurar o save.');}};

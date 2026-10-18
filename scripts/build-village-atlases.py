@@ -3,8 +3,8 @@ import json
 from PIL import Image
 from build_sprite_atlases import ASSETS, write_atlas
 
-for name in ('kaijin', 'benimaru', 'shuna'):
-    filename = f'npc-{name}-anime-v2'
+for name in ('kaijin', 'benimaru', 'shuna', 'myourmiles'):
+    filename = f'npc-{name}-anime-v1' if name=='myourmiles' else f'npc-{name}-anime-v2'
     with Image.open(ASSETS / f'{filename}.png') as im:
         width, height = im.size
         assert width % 2 == height % 2 == 0

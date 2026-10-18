@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 184,
+        "y": 188,
+        "w": 309,
+        "h": 405
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 12,
+        "y": 4,
+        "w": 309,
+        "h": 405
+      },
+      "sourceSize": {
+        "w": 330,
+        "h": 413
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 802,
+        "y": 188,
+        "w": 277,
+        "h": 405
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 36,
+        "y": 4,
+        "w": 277,
+        "h": 405
+      },
+      "sourceSize": {
+        "w": 330,
+        "h": 413
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 187,
+        "y": 778,
+        "w": 302,
+        "h": 390
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 12,
+        "y": 19,
+        "w": 302,
+        "h": 390
+      },
+      "sourceSize": {
+        "w": 330,
+        "h": 413
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 781,
+        "y": 776,
+        "w": 312,
+        "h": 391
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 14,
+        "y": 18,
+        "w": 312,
+        "h": 391
+      },
+      "sourceSize": {
+        "w": 330,
+        "h": 413
+      }
+    }
+  },
+  "meta": {
+    "image": "npc-myourmiles-anime-v1.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "tool": "image_gen built-in",
+  "reference": "public/assets/sprites/wolf-anime-v2.png",
+  "assets": [
+    {
+      "file": "village-tempest-anime-v2.png",
+      "prompt": "Use case: stylized-concept. Asset type: actual playable JRPG town background bitmap, landscape 3:2. Create a beautiful pixel art village inspired by Tempest from That Time I Got Reincarnated as a Slime. Elevated top-down three-quarter RPG camera, orthographic parallel perspective, NOT an illustration with horizon. Match the existing game's anime pixel sprites: dark crisp outlines, hard cel shading, visible square pixel clusters, rich controlled colors, nearest-neighbor pixel aesthetic, no soft painterly brushwork. A prosperous welcoming settlement in Jura forest with Japanese-fantasy timber and white plaster houses and blue tiled roofs, tall central civic hall, left smithy with chimney and anvil, right shrine-like herbalist clinic with pink flowers, surrounding residential houses and market stalls, paved town square fountain, lanterns, trees, palisade, river across bottom and central wooden bridge. Runtime layout MUST precisely follow these normalized coordinates: left smithy door at (27.5%,47.3%), central hall door at (50%,33%), right clinic door at (72.5%,47.3%). Leave clear walkable paving in front of these buildings and particularly NPC standing locations (27.5%,50.5%), (50%,36.2%), (72.5%,50.5%). Fountain at (50%,62%). Bridge at (50%,86%). Full map edge to edge, rich coherent hand-pixelled environmental detail with distinct rooftile clusters, ground stones, plants. Bright warm daylight. No characters, people, monsters, letters, labels, interface, logos, text, frame or watermark. Do not include the wolf reference character. Reference image 1 is ONLY a reference for pixel-edge treatment, outline and anime cel-shading language, not subject. Output opaque background."
+    },
+    {
+      "file": "npc-kaijin-anime-v2.png"
+    },
+    {
+      "file": "npc-benimaru-anime-v2.png"
+    },
+    {
+      "file": "npc-shuna-anime-v2.png"
+    }
+  ]
+}

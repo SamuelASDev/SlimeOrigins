@@ -1,9 +1,8 @@
-﻿import { addItem, skills, type State, type SkillItem, type SkillId } from './model.ts';
+﻿import { skills, type State, type SkillItem } from './model.ts';
 import { gearValue, gearNames } from './equipment.ts';
-import { materialIds, type Material } from './village.ts';
 export const skillValue=(item:SkillItem)=>8*item.rank*item.rank;
 export function sellItem(s:State,kind:'skill'|'gear',uid:number,atVillage=false){
- if(!atVillage||!s.village.founded)return {ok:false,message:'Funde a vila para negociar com o mercador.'};
+ if(!atVillage||!s.village.founded)return {ok:false,message:'Visite Myourmiles na vila para negociar.'};
  const item=kind==='skill'?s.inventory.find(i=>i.uid===uid):s.equipment.items.find(i=>i.uid===uid);
  if(!item)return {ok:false,message:'Este item não está mais disponível.'};
  if(item.favorite)return {ok:false,message:'Item favorito protegido. Remova a estrela antes de vender.'};

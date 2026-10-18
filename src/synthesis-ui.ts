@@ -1,6 +1,6 @@
 import {skillIcon} from './item-icons.ts';
 import {preserveMenuState} from './menu-state.ts';
-﻿import {skills,skillIds,itemLabel,mix,mixRecipes,previewMix,type State} from './model.ts';
+import {skills,skillIds,itemLabel,mix,mixRecipes,previewMix,type State} from './model.ts';
 import {renderSkillBag} from './inventory-ui.ts';
 let selected:[number,number]=[0,0],result='',history:string[]=[],redraw:(()=>void)|null=null;
 const get=(id:string)=>document.getElementById(id)!;

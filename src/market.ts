@@ -1,5 +1,5 @@
 ﻿import {addItem,type State,type SkillId} from './model.ts';
-import {addGear,gearValue,type GearSlot} from './equipment.ts';
+import {addGear,type GearSlot} from './equipment.ts';
 import {materialIds,type Material} from './village.ts';
 export const MARKET_INTERVAL=15*60*1000;
 export type Offer={id:string;kind:'skill';skill:SkillId;rank:number;price:number;stock:number}|{id:string;kind:'material';material:Material;quantity:number;price:number;stock:number}|{id:string;kind:'gear';slot:GearSlot;tier:number;price:number;stock:number};

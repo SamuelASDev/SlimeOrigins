@@ -591,7 +591,7 @@ el('confirm-restore').onclick=()=>{if(!pendingRestore)return;try{restoringSave=t
 el('cancel-restore').onclick=()=>{pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback','Restauração cancelada.');};
 (el('import-save') as HTMLInputElement).onchange=async event=>{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw new Error('Arquivo muito grande.');stageRestore(await file.text());}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível importar.');}finally{input.value='';}};
 setInterval(()=>{if(!document.hidden)save();},15000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);receiveRewards();}}catch{}observationStart=Date.now();observedKills=0;save();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const previousCopies=state.inventory.length;const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);receiveRewards(state.inventory.length-previousCopies);}}catch{}observationStart=Date.now();observedKills=0;save();}});
 
 setTimeout(()=>{if(offlineSummary){log(offlineSummary,true);offlineSummary='';}},1000);
 

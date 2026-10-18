@@ -1,4 +1,4 @@
-﻿import Phaser from 'phaser';
+import Phaser from 'phaser';
 import type { Building, Village } from './village';
 
 export const VILLAGE_WIDTH = 1536, VILLAGE_HEIGHT = 1024;

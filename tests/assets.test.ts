@@ -1,3 +1,5 @@
+import {skillOrder,skillIcon,gearIcon,supplyIcon} from '../src/item-icons.ts';
+import {skillIds} from '../src/model.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -30,8 +32,8 @@ test('slime servido no jogo é uma cópia exata do arquivo original', () => {
 });
 
 test('sprites da vila possuem quatro poses completas e metadados coerentes', () => {
- for (const name of ['kaijin','benimaru','shuna']) {
-  const file=`npc-${name}-anime-v2`;
+ for (const name of ['kaijin','benimaru','shuna','myourmiles']) {
+  const file=`npc-${name}-anime-${name==='myourmiles'?'v1':'v2'}`;
   const png=readFileSync(new URL(`${file}.png`,dir));
   const atlas=JSON.parse(readFileSync(new URL(`${file}.json`,dir),'utf8'));
   assert.equal(png.readUInt32BE(16),atlas.meta.size.w);
@@ -49,4 +51,13 @@ test('sprites da vila possuem quatro poses completas e metadados coerentes', () 
  }
  const map=readFileSync(new URL('village-tempest-anime-v2.png',dir));
  assert.equal(map.readUInt32BE(16),1536);assert.equal(map.readUInt32BE(20),1024);
+});
+
+test('atlas de ícones cobrem todas as habilidades e variantes de equipamento',()=>{
+ assert.deepEqual([...skillOrder].sort(),[...skillIds].sort());assert.equal(new Set(skillOrder).size,24);
+ for(const id of skillIds)assert.match(skillIcon(id),/icon-skills/);
+ for(const slot of ['weapon','armor','charm'] as const)for(const tier of [1,2,3])assert.match(gearIcon(slot,tier),/icon-items/);
+ assert.match(supplyIcon('ore'),/icon-items/);
+ const skills=readFileSync(new URL('icons-skills-anime-v1.png',dir)),items=readFileSync(new URL('icons-items-anime-v1.png',dir));
+ assert.equal(skills.readUInt32BE(16)*4,skills.readUInt32BE(20)*6);assert.equal(items.readUInt32BE(16),items.readUInt32BE(20));
 });

@@ -1,3 +1,4 @@
+import { offlineReward, decodeSave, nextObjective, type Checkpoint } from './journey';
 import { VillageMap } from './village-map';
 import type { Building } from './village';
 import { villageMarkup, renderVillage } from './village-ui';
@@ -13,7 +14,17 @@ import { kinds, fusionIds, skillIds, skillRank, skillPower, addItem, itemLabel, 
 
 const SAVE = 'slime-origins-v2';
 let state = fresh();
-try { state = migrate(JSON.parse(localStorage.getItem(SAVE) ?? localStorage.getItem('slime-origins-v1') ?? 'null')); } catch { /* A damaged save starts a fresh session. */ }
+let checkpoint: unknown = null;
+let offlineSummary = '';
+let observedKills = 0, observationStart = Date.now();
+let lastHuntedKind: Kind = 'bat';
+let audioContext: AudioContext | null = null;
+let soundEnabled = localStorage.getItem('slime-sound') === 'true';
+function chime(){
+ if(!soundEnabled)return;
+ try { audioContext ??= new AudioContext(); void audioContext.resume(); const osc=audioContext.createOscillator(),gain=audioContext.createGain(); osc.type='triangle';osc.frequency.setValueAtTime(523,audioContext.currentTime);osc.frequency.exponentialRampToValueAtTime(784,audioContext.currentTime+.12);gain.gain.setValueAtTime(.035,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+.2);osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+.21); } catch { /* Audio is optional. */ }
+}
+try { const raw=JSON.parse(localStorage.getItem(SAVE) ?? localStorage.getItem('slime-origins-v1') ?? 'null');state = migrate(raw);checkpoint=raw?.checkpoint; const reward=offlineReward(state,checkpoint);if(reward.kills)offlineSummary=`Expedição offline: ${reward.kills} criaturas derrotadas, materiais e habilidades recolhidos. Limite: 2h e 240 abates; ritmo reduzido a 50%.`;localStorage.setItem(SAVE,JSON.stringify(state)); } catch { /* A damaged save starts a fresh session. */ }
 let inVillage = false;
 let paused = false;
 let priority: Kind | 'any' = 'any';
@@ -22,7 +33,10 @@ let panelTrigger: HTMLElement | null = null;
 let saveWarning = false;
 let lastBossResult = '';
 function save() {
-  try { localStorage.setItem(SAVE, JSON.stringify(state)); }
+  try { const seconds=(Date.now()-observationStart)/1000;
+    const interval=observedKills>0?seconds/observedKills:0;
+    const checkpoint:Checkpoint={at:Date.now(),kind:lastHuntedKind,interval,enabled:!paused&&!inVillage&&!scene?.bossActive&&scene?.recovering===0&&seconds>=60&&observedKills>=3};
+    localStorage.setItem(SAVE, JSON.stringify({...state,checkpoint})); }
   catch { if (!saveWarning) { saveWarning = true; log('Não foi possível salvar neste navegador. A sessão continua funcionando.'); } }
 }
 
@@ -39,7 +53,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </section>
   <section class="location frame"><p>FLORESTA DE JURA</p><h1 id="location-name">Clareira do despertar</h1><div><i class="live-dot"></i><span id="status">CAÇA AUTOMÁTICA</span></div><p class="resources" id="resources"></p></section>
   <nav class="area-tabs frame" aria-label="Áreas do mundo"><button id="area-cave" aria-pressed="true">01 · Caverna do Selo</button><button id="area-forest" aria-pressed="false">02 · Floresta de Jura</button><button data-panel="map-panel">⌖ Mapa</button></nav>
-  <div class="village-map-controls frame"><span>ARRASTE O MAPA · CLIQUE NAS CONSTRUÇÕES</span><div><button id="leave-village">← Voltar à caça</button><button id="center-village">⌖ Centralizar</button><button data-village-place="workshop">Oficina</button><button data-village-place="lab">Laboratório</button><button data-village-place="alchemy">Alquimia</button></div></div><div class="world-title" aria-hidden="true"><span>SLIME · ORIGENS</span><small>ECOS DA EVOLUÇÃO</small></div>
+  <div class="village-map-controls frame"><span>ARRASTE · RODA PARA ZOOM · CONVERSE COM OS MORADORES</span><div><button id="leave-village">← Voltar à caça</button><button id="center-village">⌖ Centralizar</button><button data-village-place="workshop">Oficina</button><button data-village-place="lab">Laboratório</button><button data-village-place="alchemy">Alquimia</button></div></div><div class="world-title" aria-hidden="true"><span>SLIME · ORIGENS</span><small>ECOS DA EVOLUÇÃO</small></div>
   <section id="boss-hud" class="boss-hud frame" aria-label="Vida do chefe" hidden><div><strong id="boss-name">Serpente Negra Anciã</strong><span id="boss-hp-text"></span></div><div class="meter boss-meter"><div id="boss-hp-bar"></div></div><p id="boss-action"></p><button id="retreat">Recuar do desafio</button></section>
   <nav class="menu-rail" aria-label="Menus do jogo"><button class="menu-button" data-panel="village-panel" title="Vila (V)"><span>⌂</span>Vila<kbd>V</kbd></button>
     <button class="menu-button" data-panel="skills-panel" title="Habilidades (H)"><span>◈</span>Habilidades<kbd>H</kbd></button>
@@ -50,7 +64,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </nav>
   <div id="notice" class="notice frame" role="status"><span>✧</span><p id="notice-text">Grande Sábio: novas essências detectadas na clareira.</p></div>
   <div class="bottom-hud">
-    <section class="target-hud frame"><span class="label">ALVO ATUAL</span><strong id="target">Procurando alvo…</strong><small id="target-action"></small></section>
+    <button id="journey-objective" class="journey-objective frame" title="Abrir próximo objetivo"></button><section class="target-hud frame"><span class="label">ALVO ATUAL</span><strong id="target">Procurando alvo…</strong><small id="target-action"></small></section>
     <section class="actionbar frame" aria-label="Controles de caça">
       <button id="pause" class="hunt-button">Ⅱ Pausar caça</button>
       <div class="hunt-priority"><label for="priority">PRIORIDADE DA CAÇA</label><select id="priority"><option value="any">Mais próximo</option>${kinds.map(k => `<option value="${k}">${creatures[k].name}</option>`).join('')}</select></div>
@@ -77,7 +91,7 @@ ${villageMarkup}
 <section id="fusion-panel" class="game-window frame" role="dialog" aria-labelledby="fusion-title" hidden><div class="window-header"><div><p class="label">PREDADOR / SÍNTESE</p><h2 id="fusion-title">Câmara de síntese</h2></div><button class="close-window" aria-label="Fechar fusões">×</button></div><div class="window-body">${synthesisMarkup}</div><div class="window-footer">Dois ingredientes · resultado descoberto ao combinar</div></section>
 <section id="boss-panel" class="game-window frame" role="dialog" aria-labelledby="boss-title" hidden><div class="window-header"><div><p class="label" id="boss-area-label">DESAFIO DA CAVERNA</p><h2 id="boss-title">Serpente Negra Anciã</h2></div><button class="close-window" aria-label="Fechar chefe">×</button></div><div class="window-body"><div class="boss-art" aria-hidden="true">♜</div><p id="boss-description" class="boss-description">Um antigo besouro coberto de pedra guarda o coração da floresta. Escolha sua build antes de entrar na arena.</p><div id="boss-traits" class="boss-traits"><p><b>Carapaça pétrea</b> · recebe 60% menos dano físico. Veneno ignora a defesa; água causa +25% de dano.</p><p><b>Impacto sísmico</b> · avisa antes de atacar uma área. Instinto caçador recua automaticamente; Véu de névoa reduz o impacto.</p><p><b>Preparação</b> · nível 4 recomendado. Você entra com vida cheia e não pode trocar a build durante o desafio.</p></div><p id="boss-requirements" class="hint"></p><p id="boss-result" class="boss-result"></p><button id="challenge" class="hunt-button">Desafiar guardião</button><p class="hint">Recompensa: 10 essências, 100 EXP e 1 troféu por vitória. Uma derrota não remove seu progresso. O poder do guardião acompanha o nível de entrada até o nível 8.</p></div></section>
 <section id="journal-panel" class="game-window frame" role="dialog" aria-labelledby="journal-title" hidden><div class="window-header"><div><p class="label">GRANDE SÁBIO</p><h2 id="journal-title">Diário da expedição</h2></div><button class="close-window" aria-label="Fechar diário">×</button></div><div class="window-body"><div id="log" class="log" role="log"></div></div></section>
-<section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Sem progresso offline nesta etapa.</p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
+<section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Expedições offline usam 50% do ritmo observado após 60 segundos e 3 abates de caçada ativa, com limite de 2 horas e 240 abates. Não exploram novas regiões nem enfrentam chefes.</p><div class="save-tools"><button id="sound-toggle">Áudio</button><button id="export-save">Exportar save</button><label class="import-save">Importar save<input id="import-save" type="file" accept="application/json,.json"></label></div><p id="save-feedback" role="status"></p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
 
 const el = (id: string) => document.getElementById(id)!;
 const put = (id: string, value: string | number) => { el(id).textContent = String(value); };
@@ -88,6 +102,7 @@ function togglePanel(id: string | null, trigger?: HTMLElement) {
   document.querySelectorAll<HTMLElement>('[data-panel]').forEach(b => { b.setAttribute('aria-expanded', String(b.dataset.panel === next)); b.setAttribute('aria-controls', b.dataset.panel!); });
   activePanel = next;
   if(next==='village-panel')renderMenus();
+  if(next)chime();
   if (next) { panelTrigger = trigger ?? panelTrigger; document.querySelector<HTMLElement>(`#${next} .close-window`)?.focus({ preventScroll: true }); }
   else panelTrigger?.focus({ preventScroll: true });
 }
@@ -107,10 +122,12 @@ function log(message: string, special = false) {
   time.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   row.append(time, document.createTextNode(message)); if (special) row.className = 'special';
   el('log').prepend(row); while (el('log').children.length > 40) el('log').lastElementChild?.remove();
+  if(special)chime();
   put('notice-text', message); el('notice').classList.toggle('special-notice', special);
 }
 function renderMenus() {
   const bossActive = scene?.bossActive ?? false;
+  put('journey-objective','◆ '+nextObjective(state).text);
   renderVillage(state,bossActive,()=>{save();renderMenus();villageMap.refresh();scene.renderHud();},message=>log(message,true));
   put('resources', `${state.essence} ESSÊNCIAS · ${state.bossWins} ${state.bossWins === 1 ? 'TROFÉU' : 'TROFÉUS'}`);
   put('equipped-name', state.equipped.length ? state.equipped.map(id => skills[id].icon).join('  ') + ` · ${state.equipped.length}/3` : 'Espaços vazios');
@@ -170,7 +187,7 @@ class Meadow extends WorldScene {
   enemyName(e: Enemy) { return this.area === 'cave' && e.kind === 'bat' ? 'Morcego gigante' : creatures[e.kind].name; }
   setArea(area: 'cave' | 'forest') {
     if(this.bossActive || !this.player) return;
-    this.clearEncounter(); this.area=area; this.destination=null;this.path=[];
+    observationStart=Date.now();observedKills=0;this.clearEncounter(); this.area=area; this.destination=null;this.path=[];
     this.drawMap(); this.cameras.main.setBounds(0,0,area==='cave'?CAVE_WIDTH:800,area==='cave'?CAVE_HEIGHT:480);
     const c=area==='cave'?center(this.sector):{x:400,y:240}; this.player.setPosition(c.x,c.y);this.playerShadow.setPosition(c.x,c.y);this.health=maxHp(state);this.recovering=0;
     this.cameras.main.centerOn(c.x,c.y);this.populate();this.renderHud();renderMenus();
@@ -275,7 +292,7 @@ class Meadow extends WorldScene {
     if (reward.levels) { this.health = maxHp(state); log(`Nível ${state.level}! Ataque e vitalidade aumentaram.`, true); }
     const token = this.generation; this.time.delayedCall(3000, () => { if (token === this.generation && !this.bossActive) this.spawn(k,false,enemy.zone); });
     const orb = this.add.circle(x, y, 4, creatures[k].color).setDepth(30); this.tweens.add({ targets: orb, x: this.player.x, y: this.player.y, scale: 0, duration: 400, onComplete: () => orb.destroy() });
-    save(); renderMenus();
+    lastHuntedKind=k;observedKills++;save(); renderMenus();
   }
   takePlayerDamage(damage: number, style: AttackSpec['style'], color: number) {
     this.health -= damage; this.playerHit = 180; this.player.setTint(0xffc8ca);
@@ -397,10 +414,11 @@ class Meadow extends WorldScene {
     if(this.destination!==null)put('target','Explorando → setor '+(this.destination+1));
     const boss = this.enemies.find(e => e.boss);
     if (boss) { put('boss-hp-text', `${Math.ceil(boss.hp)} / ${boss.max}`); el('boss-hp-bar').style.width = `${Math.max(0, boss.hp / boss.max * 100)}%`; put('boss-action', this.windup > 0 ? this.caveBoss?'⚠ HÁLITO CORROSIVO · recue!':'⚠ IMPACTO SÍSMICO · preparando ataque!' : this.caveBoss?'ESCAMAS ANTIGAS · −60% de dano físico':'CARAPAÇA PÉTREA · −60% de dano físico'); }
-    if(inVillage){put('location-name','Tempest ? Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';}
+    if(inVillage){put('location-name','Tempest · Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';}
 
   }
   update(_time: number, delta: number) {
+    if(document.hidden)return;
     const dt = Math.min(delta, 100);
     if (paused) { this.renderHud(); return; }
     if (this.recovering > 0) { this.recovering -= dt; if (this.recovering <= 0) { this.health = maxHp(state); log('Vitalidade restaurada. Retomando a caça.'); renderMenus(); } this.renderHud(); return; }
@@ -473,7 +491,7 @@ class Meadow extends WorldScene {
     this.player.setDepth(this.player.y / 100 + .1);
     if (this.health <= 0) {
       if (this.bossActive) { this.finishBoss('loss'); return; }
-      this.strikes = []; this.playerAttack = null; this.combatFX.clear(); for (const e of this.enemies) { e.action = null; e.sprite.setPosition(e.x, e.y).setScale(e.baseScale).setAngle(0).play(`${e.boss ? this.caveBoss?'caveBoss':'guardian' : e.kind}-idle`); } this.health = 0; this.recovering = 5000; this.target = null; this.player.setPosition(this.area==='cave'?center(this.sector).x:400,this.area==='cave'?center(this.sector).y:240);this.path=[];
+      this.strikes = []; this.playerAttack = null; this.combatFX.clear(); for (const e of this.enemies) { e.action = null; e.sprite.setPosition(e.x, e.y).setScale(e.baseScale).setAngle(0).play(`${e.boss ? this.caveBoss?'caveBoss':'guardian' : e.kind}-idle`); } observationStart=Date.now();observedKills=0;this.health = 0; this.recovering = 5000; this.target = null; this.player.setPosition(this.area==='cave'?center(this.sector).x:400,this.area==='cave'?center(this.sector).y:240);this.path=[];
       for (const e of this.enemies) { e.poisonUntil = 0; e.attackAt = 1500; }
       log('Vitalidade esgotada. Recuperando por 5 s, sem perder conhecimento.'); renderMenus();
     }
@@ -485,9 +503,9 @@ const villageMap=new VillageMap(()=>state.village,id=>openVillageBuilding(id));
 function enterVillage(){
  if(scene.bossActive){log('Recue do desafio para visitar a vila.');return;}
  if(inVillage){togglePanel(null);villageMap.centerVillage();return;}
- togglePanel(null);inVillage=true;document.body.classList.add('village-mode');
+ observationStart=Date.now();observedKills=0;togglePanel(null);inVillage=true;document.body.classList.add('village-mode');
  scene.scene.sleep();if(scene.scene.isSleeping('VillageMap'))scene.scene.wake('VillageMap');else scene.scene.launch('VillageMap');
- scene.renderHud();put('location-name','Tempest ? Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');
+ scene.renderHud();put('location-name','Tempest · Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');
  document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';
  el('game').setAttribute('aria-label','Mapa da vila: arraste com o mouse para explorar e clique nas construções.');
 }
@@ -498,7 +516,7 @@ function leaveVillage(){
 function openVillageBuilding(id:Building){
  if(!inVillage)return;const panel=el('village-panel');panel.dataset.focus=id;
  if(activePanel==='village-panel')renderMenus();else togglePanel('village-panel');
- const names={workshop:'Oficina e artesão',lab:'Laboratório',alchemy:'Alquimia'};put('village-title',names[id]);
+ const names={workshop:'Kaijin · Forja e equipamentos',lab:'Benimaru · Análise e síntese',alchemy:'Shuna · Jardim e alquimia'};put('village-title',names[id]);
  const body=document.querySelector<HTMLElement>('#village-panel .window-body');if(body)body.scrollTop=0;
 }
 el('leave-village').onclick=leaveVillage;
@@ -506,13 +524,13 @@ el('center-village').onclick=()=>{togglePanel(null);villageMap.centerVillage();}
 document.querySelectorAll<HTMLButtonElement>('[data-village-place]').forEach(b=>b.onclick=()=>{const id=b.dataset.villagePlace as Building;villageMap.focusBuilding(id);openVillageBuilding(id);});
 
 new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: 800, height: 480, backgroundColor: '#365639', pixelArt: true, antialias: false, scene: [scene,villageMap], scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH } });
-el('pause').onclick = () => { paused = !paused; if (paused) { scene.anims.pauseAll(); scene.tweens.pauseAll(); scene.time.paused = true; } else { scene.anims.resumeAll(); scene.tweens.resumeAll(); scene.time.paused = false; } put('pause', paused ? '▶ Retomar caça' : 'Ⅱ Pausar caça'); scene.renderHud(); };
+el('pause').onclick = () => { observationStart=Date.now();observedKills=0;paused = !paused; if (paused) { scene.anims.pauseAll(); scene.tweens.pauseAll(); scene.time.paused = true; } else { scene.anims.resumeAll(); scene.tweens.resumeAll(); scene.time.paused = false; } put('pause', paused ? '▶ Retomar caça' : 'Ⅱ Pausar caça'); scene.renderHud(); };
 (el('priority') as HTMLSelectElement).onchange = event => { priority = (event.target as HTMLSelectElement).value as Kind | 'any'; scene.target = null; };
 el('challenge').onclick = () => scene.startBoss(); el('retreat').onclick = () => scene.finishBoss('retreat');
 el('fullscreen').onclick = async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); } catch { log('Tela cheia indisponível. Você também pode usar F11.'); } };
 document.addEventListener('fullscreenchange', () => put('fullscreen', document.fullscreenElement ? '⛶ Sair da tela cheia' : '⛶ Entrar em tela cheia'));
 el('reset').onclick = () => { if (confirm('Recomeçar e apagar o progresso desta aventura?')) { state = fresh(); save(); location.reload(); } };
-window.addEventListener('pagehide', save);
+window.addEventListener('pagehide',()=>{if(!document.hidden)save();});
 
 el('area-cave').onclick=()=>{leaveVillage();scene.setArea('cave');};
 el('area-forest').onclick=()=>{leaveVillage();scene.setArea('forest');};
@@ -526,3 +544,13 @@ el('analyze-spring').onclick=()=>{
  const c=center(0);if(Phaser.Math.Distance.Between(scene.player.x,scene.player.y,c.x,c.y)>380){scene.travelTo(0);return;}
  addItem(state,'waterBlade');addItem(state,'mushroom');scene.springAt=60000;state.springReadyAt=Date.now()+60000;save();renderMenus();log('Análise da nascente: +1 Lâmina de água e +1 Regeneração. A fonte se renova em 60 s.',true);
 };
+
+put('sound-toggle',soundEnabled?'Áudio: ligado':'Áudio: desligado');
+el('sound-toggle').onclick=()=>{soundEnabled=!soundEnabled;localStorage.setItem('slime-sound',String(soundEnabled));put('sound-toggle',soundEnabled?'Áudio: ligado':'Áudio: desligado');chime();};
+el('journey-objective').onclick=()=>{const goal=nextObjective(state);if(goal.panel==='village-panel'){enterVillage();openVillageBuilding(!state.village.buildings.workshop?'workshop':!state.village.buildings.lab?'lab':'alchemy');}else togglePanel(goal.panel);};
+el('export-save').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({game:'slime-origins',state},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='slime-origins-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);put('save-feedback','Save exportado. Guarde o arquivo para restaurar sua aventura.');};
+(el('import-save') as HTMLInputElement).onchange=async event=>{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw new Error('Arquivo muito grande.');const loaded=decodeSave(await file.text());if(!confirm(`Substituir a aventura atual pelo save de nível ${loaded.level}, com ${loaded.kills} abates?`))return;localStorage.setItem(SAVE,JSON.stringify(loaded));location.reload();}catch(error){put('save-feedback',error instanceof Error?error.message:'Não foi possível importar.');}finally{input.value='';}};
+setInterval(()=>{if(!document.hidden)save();},15000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);renderMenus();}}catch{}observationStart=Date.now();observedKills=0;save();}});
+
+setTimeout(()=>{if(offlineSummary){log(offlineSummary,true);offlineSummary='';}},1000);

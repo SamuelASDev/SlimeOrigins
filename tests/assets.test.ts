@@ -79,3 +79,9 @@ test('props revisados de Jura não cortam vizinhos e têm âncoras independentes
  assert.deepEqual(Object.keys(atlas.frames),['oak','willow','iron','crystal','herbs','log']);
  for(const [i,item] of Object.values(atlas.frames).entries() as ArrayIterator<[number,any]>){const {x,y,w,h}=item.frame,left=i%3*512,top=Math.floor(i/3)*512;assert.ok(x-left>=20&&y-top>=20&&left+512-x-w>=20&&top+512-y-h>=20);assert.deepEqual(item.sourceSize,{w,h});assert.deepEqual(item.spriteSourceSize,{x:0,y:0,w,h});assert.equal(item.trimmed,false);}
 });
+
+test('props da caverna mantêm recortes originais com bases independentes',()=>{
+ const original=JSON.parse(readFileSync(new URL('cave-decor-v2.json',dir),'utf8')),atlas=JSON.parse(readFileSync(new URL('cave-props-v3.json',dir),'utf8'));
+ assert.equal(atlas.meta.image,'cave-decor-v2.png');assert.deepEqual(Object.keys(atlas.frames),['ore','pillar','herbs','web']);
+ for(const [i,item] of Object.values(atlas.frames).entries() as ArrayIterator<[number,any]>){const {w,h}=item.frame;assert.deepEqual(item.frame,original.frames[String(i)].frame);assert.deepEqual(item.sourceSize,{w,h});assert.deepEqual(item.spriteSourceSize,{x:0,y:0,w,h});assert.equal(item.trimmed,false);}
+});

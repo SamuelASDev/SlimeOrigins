@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "ore": {
+      "frame": {
+        "x": 119,
+        "y": 34,
+        "w": 554,
+        "h": 468
+      },
+      "rotated": false,
+      "trimmed": false,
+      "sourceSize": {
+        "w": 554,
+        "h": 468
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 554,
+        "h": 468
+      }
+    },
+    "pillar": {
+      "frame": {
+        "x": 905,
+        "y": 16,
+        "w": 529,
+        "h": 492
+      },
+      "rotated": false,
+      "trimmed": false,
+      "sourceSize": {
+        "w": 529,
+        "h": 492
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 529,
+        "h": 492
+      }
+    },
+    "herbs": {
+      "frame": {
+        "x": 72,
+        "y": 529,
+        "w": 620,
+        "h": 468
+      },
+      "rotated": false,
+      "trimmed": false,
+      "sourceSize": {
+        "w": 620,
+        "h": 468
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 620,
+        "h": 468
+      }
+    },
+    "web": {
+      "frame": {
+        "x": 817,
+        "y": 528,
+        "w": 667,
+        "h": 473
+      },
+      "rotated": false,
+      "trimmed": false,
+      "sourceSize": {
+        "w": 667,
+        "h": 473
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 667,
+        "h": 473
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-decor-v2.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / independent cave prop anchors"
+  }
+}

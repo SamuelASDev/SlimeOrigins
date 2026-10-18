@@ -21,3 +21,15 @@ test('save anterior recebe novas essências sem perder habilidades nem somar arm
  migrated.equipped=['beetle','armorsaurus'];assert.equal(effects(migrated).defense,.35);
  migrated.equipped.push('adaptive');assert.equal(effects(migrated).defense,.45);
 });
+import {caveGround} from '../src/cave-map.ts';
+import {cavePillars,caveProps,cavePools,caveTrail,caveSeal} from '../src/cave-layout.ts';
+test('composição da caverna preserva chão sob pilares e mantém percurso dentro dos corredores',()=>{
+ for(const p of cavePillars){const tx=Math.floor(p.x/CELL),ty=Math.floor((p.y-32)/CELL);assert.ok(caveGround.has(`${tx},${ty}`));assert.equal(walkable({x:tx*CELL+16,y:ty*CELL+16}),false);assert.ok(p.width>=92&&p.width<=104);}
+ for(const tile of caveTrail)assert.ok(caveGround.has(tile));
+});
+test('decoração da caverna tem escala contida e fica separada de pilares e outras formações',()=>{
+ for(let zone=0;zone<7;zone++)assert.ok(caveProps.filter(p=>p.zone===zone).length>=2);
+ for(let i=0;i<caveProps.length;i++){const p=caveProps[i];assert.ok(walkable(p));assert.ok(p.width>=24&&p.width<=100);for(const pillar of cavePillars)assert.ok(Math.hypot(p.x-pillar.x,p.y-pillar.y)>=112);for(const other of caveProps.slice(i+1))assert.ok(Math.hypot(p.x-other.x,p.y-other.y)>=84);if(p.frame==='herbs')assert.ok(p.zone<2);if(p.frame==='web')assert.equal(p.zone,3);}
+ for(const pool of cavePools){assert.ok(pool.width<=290&&pool.height<=142);assert.ok(walkable({x:pool.x,y:pool.y}));}
+ assert.ok(caveSeal.dragonWidth>210);assert.ok(caveSeal.width>=caveSeal.dragonWidth);
+});

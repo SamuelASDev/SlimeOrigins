@@ -1,4 +1,4 @@
-﻿export type Point = { x: number; y: number };
+export type Point = { x: number; y: number };
 export const CELL = 32, CAVE_WIDTH = 9984, CAVE_HEIGHT = 2560;
 export const sectors = [
  {name:'Despertar subterrâneo',subtitle:'Hipokute · água · análise do slime',x:21,y:29,kind:'bat'},
@@ -22,8 +22,9 @@ for(const s of sectors) for(let dy=-14;dy<=14;dy++) {
 for(const s of sectors){carve(s.x-20,s.y-4,s.x-16,s.y+4);carve(s.x+16,s.y+4,s.x+20,s.y+9);}
 
 for (let i = 1; i < sectors.length; i++) { const a = sectors[i - 1], b = sectors[i]; carve(a.x, a.y - 3, b.x, a.y + 3); carve(b.x - 3, Math.min(a.y, b.y) - 3, b.x + 3, Math.max(a.y, b.y) + 3); }
+export const caveGround=new Set(floor);
 // Stone columns are real obstacles; their art uses these same coordinates.
-export const pillars = sectors.flatMap(s=>[-1,1].flatMap(dx=>[-1,1].map(dy=>({x:s.x+dx*9,y:s.y+dy*6}))));
+export const pillars = sectors.flatMap(s=>[-1,1].flatMap(dx=>[-1,1].map(dy=>({x:s.x+dx*7,y:s.y+dy*5}))));
 for(const p of pillars)for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)floor.delete(key(p.x+dx,p.y+dy));
 export const walkable = (p: Point) => floor.has(key(Math.floor(p.x / CELL), Math.floor(p.y / CELL)));
 export function clearLine(a: Point, b: Point) { const n = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 12); for (let i = 0; i <= n; i++) if (!walkable({ x: a.x + (b.x - a.x) * i / Math.max(1,n), y: a.y + (b.y - a.y) * i / Math.max(1,n) })) return false; return true; }

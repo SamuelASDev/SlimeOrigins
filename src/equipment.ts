@@ -1,7 +1,7 @@
 ﻿import type { State } from './model.ts';
 export const gearSlots = ['weapon','armor','charm'] as const;
 export type GearSlot = typeof gearSlots[number];
-export const gearNames:Record<GearSlot,string>={weapon:'Núcleo ofensivo',armor:'Revestimento corporal',charm:'Talismã de Jura'};
+export const gearNames:Record<GearSlot,string>={weapon:'Espada de Tempest',armor:'Armadura de Tempest',charm:'Amuleto de Jura'};
 export const gearIcons:Record<GearSlot,string>={weapon:'⚔',armor:'⛨',charm:'✧'};
 export type ItemOrigin='hunt'|'forge'|'fusion'|'merchant'|'legacy';
 export type ItemIdentity={instanceId:string;favorite:boolean;origin:ItemOrigin;parents:string[]};

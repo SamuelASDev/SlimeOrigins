@@ -41,9 +41,9 @@ test('compras não cobram saldo insuficiente; materiais e runas chegam à mochil
  const s=fresh();s.coins=200;assert.equal(purchaseOffer(s,'0:rune-1',true,0).ok,false);s.village.founded=true;assert.equal(purchaseOffer(s,'0:rune-1',true,0).ok,true);assert.equal(s.coins,120);assert.equal(s.inventory[0].origin,'merchant');assert.equal(purchaseOffer(s,'0:invalid',true,0).ok,false);assert.equal(purchaseOffer(s,'0:material-ore',true,0).ok,true);assert.equal(s.village.materials.ore,5);assert.equal(s.coins,90);s.coins=10;const before=JSON.stringify(s);assert.equal(purchaseOffer(s,'0:material-ore',true,0).ok,false);assert.equal(purchaseOffer(s,'0:rune-1',true,0).ok,false);assert.equal(JSON.stringify(s),before);
 });
 test('forja entrega cópias independentes e preserva moedas e materiais em falha',()=>{
- const s=fresh();s.village.founded=true;s.village.artisan=true;s.village.buildings.workshop=2;s.village.materials.ore=100;s.village.materials.silk=100;
+ const s=fresh();s.village.founded=true;s.village.artisan=true;s.village.buildings.workshop=2;s.coins=1000;for(const id of Object.keys(s.village.materials))s.village.materials[id]=100;
  assert.equal(craftGear(s,'charm'),true);assert.equal(craftGear(s,'charm'),true);assert.equal(s.equipment.items.length,2);assert.equal(s.equipment.slots.charm,null);assert.notEqual(s.equipment.items[0].instanceId,s.equipment.items[1].instanceId);assert.equal(s.equipment.items[0].tier,2);
- s.village.materials.silk=0;const before=JSON.stringify(s);assert.equal(craftGear(s,'weapon'),false);assert.equal(JSON.stringify(s),before);
+ s.village.materials.iron=0;const before=JSON.stringify(s);assert.equal(craftGear(s,'weapon'),false);assert.equal(JSON.stringify(s),before);
 });
 test('migração repara IDs duplicados sem permitir duas referências à mesma instância',()=>{
  const s=fresh(),a=addItem(s,'heat');addItem(s,'bat');s.inventory[1].instanceId=a.instanceId;s.inventory[1].uid=a.uid;

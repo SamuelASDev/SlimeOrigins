@@ -1,3 +1,4 @@
+import type {ResourceDrop} from './resources.ts';
 import {freshMarket,readMarket,type MarketState} from './market-state.ts';
 import { freshEquipment, addGear, readIdentity, identity, gearSlots, type Equipment, type ItemIdentity, type ItemOrigin } from './equipment.ts';
 import { freshVillage, readVillage, villageLoot, villageBonuses, type Village } from './village.ts';
@@ -194,11 +195,11 @@ export function mix(state:State,a:number,b:number):{ok:boolean;message:string;it
  const item=addItem(state,preview.skill!,preview.rank!,'fusion',parents);
  return {ok:true,message:`Síntese concluída: ${itemLabel(item)}!`,item};
 }
-export function awardKill(state: State, kind: Kind, roll = Math.random(), lootRoll=Math.random()): { unlocked: boolean; levels: number; item?: SkillItem } {
- villageLoot(state,kind);state.coins+=2;state.kills++;state.essence++;state.xp+=creatures[kind].xp;state.fragments[kind]++;state.pity[kind]++;
+export function awardKill(state: State, kind: Kind, roll = Math.random(), lootRoll=Math.random(),resourceRoll=Math.random()): { unlocked: boolean; levels: number; item?: SkillItem; materials:ResourceDrop[] } {
+ const materials=villageLoot(state,kind,resourceRoll);state.coins+=2;state.kills++;state.essence++;state.xp+=creatures[kind].xp;state.fragments[kind]++;state.pity[kind]++;
  let item:SkillItem|undefined;let unlocked=false;
  if(roll<.25+villageBonuses(state).absorb||state.pity[kind]>=GUARANTEE){const table=drops[kind];const id=table[Math.min(table.length-1,Math.floor(Math.max(0,lootRoll)*table.length))];unlocked=!state.unlocked[id];item=addItem(state,id);state.pity[kind]=0;}
- return {unlocked,levels:applyLevels(state),item};
+ return {unlocked,levels:applyLevels(state),item,materials};
 }
 export function applyLevels(state: State): number {
   let levels = 0;

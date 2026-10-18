@@ -2,7 +2,7 @@ import {equipGear} from '../src/equipment.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {fresh,migrate,awardKill,effects} from '../src/model.ts';
-import {foundVillage,recruitArtisan,upgradeBuilding,craftGear,brewTonic,buildingIds} from '../src/village.ts';
+import {foundVillage,recruitArtisan,upgradeBuilding,craftGear,brewTonic,buildingIds,materialIds} from '../src/village.ts';
 test('fundação e recrutamento exigem marcos e recompensas só são concedidas uma vez',()=>{
  const s=fresh();assert.equal(foundVillage(s),false);s.kills=10;assert.equal(foundVillage(s),true);assert.equal(s.village.materials.timber,24);assert.equal(foundVillage(s),false);assert.equal(s.village.materials.timber,24);
  assert.equal(recruitArtisan(s),false);s.kills=20;assert.equal(recruitArtisan(s),true);assert.equal(recruitArtisan(s),false);
@@ -15,7 +15,7 @@ test('caça fornece materiais coerentes e laboratório melhora a absorção sem 
 test('construções cobram materiais, respeitam limites e componentes exigem artesão e oficina',()=>{
  const s=fresh();s.kills=20;foundVillage(s);assert.equal(craftGear(s,'weapon'),false);
  assert.equal(upgradeBuilding(s,'workshop'),true);assert.equal(s.village.materials.timber,16);assert.equal(craftGear(s,'weapon'),false);recruitArtisan(s);
- for(const id of ['timber','ore','silk','herbs'] as const)s.village.materials[id]=1000;
+ s.coins=10000;for(const id of materialIds)s.village.materials[id]=1000;
  assert.equal(craftGear(s,'weapon'),true);assert.equal(craftGear(s,'weapon'),true);assert.equal(s.equipment.items.length,2);assert.equal(effects(s).damageBonus,1);equipGear(s,s.equipment.items[0].uid);
  for(const id of buildingIds){while(s.village.buildings[id]<3)assert.equal(upgradeBuilding(s,id),true);const before=JSON.stringify(s);assert.equal(upgradeBuilding(s,id),false);assert.equal(JSON.stringify(s),before);}
  assert.equal(craftGear(s,'armor'),true);assert.ok(effects(s).damageBonus>1);assert.ok(effects(s).defense>0);assert.ok(effects(s).regen>0);

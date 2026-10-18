@@ -12,3 +12,11 @@ export function sellItem(s:State,kind:'skill'|'gear',uid:number,atVillage=false)
  if(kind==='skill')s.inventory=s.inventory.filter(i=>i.uid!==uid);else s.equipment.items=s.equipment.items.filter(i=>i.uid!==uid);
  s.coins+=value;return {ok:true,message:`${name} vendido por ${value} moedas.`};
 }
+
+import {materialIds,materialNames,resourceValues,type Material} from './resources.ts';
+export function sellResources(s:State,id:Material,quantity:number,atVillage=false){
+ if(!atVillage||!s.village.founded)return {ok:false,message:'Visite Myourmiles na vila para negociar.'};
+ if(!materialIds.includes(id)||!Number.isInteger(quantity)||quantity<=0||s.village.materials[id]<quantity)return {ok:false,message:'Quantidade de recurso inválida ou insuficiente.'};
+ const value=quantity*resourceValues[id];s.village.materials[id]-=quantity;s.coins+=value;
+ return {ok:true,message:`${quantity} ${materialNames[id]} vendidos por ${value} moedas.`};
+}

@@ -1,3 +1,4 @@
+import {resourceValues} from './resources.ts';
 ﻿import {addItem,type State,type SkillId} from './model.ts';
 import {addGear,type GearSlot} from './equipment.ts';
 import {materialIds,type Material} from './village.ts';
@@ -12,7 +13,7 @@ export function marketCycle(s:State,now=Date.now()){
 export function marketOffers(s:State,now=Date.now()):Offer[]{
  const cycle=marketCycle(s,now),offers:Offer[]=[];
  for(let n=0;n<3;n++)offers.push({id:`${cycle}:rune-${n}`,kind:'skill',skill:pool[(cycle*3+n)%pool.length],rank:1,price:80,stock:3});
- for(const id of materialIds)offers.push({id:`${cycle}:material-${id}`,kind:'material',material:id,quantity:5,price:30,stock:4});
+ for(const id of materialIds)offers.push({id:`${cycle}:material-${id}`,kind:'material',material:id,quantity:5,price:Math.max(30,resourceValues[id]*15),stock:id==='scale'||id==='crystal'?1:4});
  for(let n=0;n<2;n++){const tier=1+(cycle+n)%3,slot=(['weapon','armor','charm'] as const)[(cycle+n)%3];offers.push({id:`${cycle}:gear-${n}`,kind:'gear',slot,tier,price:20*tier*tier*4,stock:1});}
  offers.push({id:`${cycle}:rare`,kind:'skill',skill:pool[(cycle+7)%pool.length],rank:2+cycle%2,price:8*(2+cycle%2)**2*4,stock:1});
  return offers;

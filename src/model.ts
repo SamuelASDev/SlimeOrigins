@@ -1,3 +1,4 @@
+import { freshEquipment, addGear, readIdentity, identity, gearSlots, type Equipment, type ItemIdentity, type ItemOrigin } from './equipment.ts';
 import { freshVillage, readVillage, villageLoot, villageBonuses, type Village } from './village.ts';
 export const kinds = ['beetle', 'snake', 'wolf', 'mushroom', 'moth', 'frog', 'wisp', 'bat', 'serpent', 'centipede', 'armorsaurus', 'spider'] as const;
 export type Kind = typeof kinds[number];
@@ -58,14 +59,15 @@ export const recipes: Record<FusionId, { parents: [SkillId, SkillId]; essence: n
   miasma: { parents: ['snake', 'moth'], essence: 12, clue: 'Uma toxina que permanece suspensa no ar.' },
   conductor: { parents: ['frog', 'wisp'], essence: 12, clue: 'A água abre o caminho para a descarga.' },
 };
-export type SkillItem = { uid: number; skill: SkillId; rank: number };
-export type State = { village: Village; springReadyAt?: number; inventory: SkillItem[]; nextItem: number; pity: Record<Kind, number>; caveWins: number; caveSector: number; visited: number[]; version: 3; level: number; xp: number; kills: number; essence: number; bossWins: number; fragments: Record<Kind, number>; unlocked: Record<SkillId, boolean>; equipped: SkillId[] };
-export const fresh = (): State => ({ village: freshVillage(), inventory: [], nextItem: 1, pity: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, caveWins: 0, caveSector: 0, visited: [0], version: 3, level: 1, xp: 0, kills: 0, essence: 0, bossWins: 0, fragments: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, unlocked: Object.fromEntries(skillIds.map(k => [k, false])) as Record<SkillId, boolean>, equipped: [] });
+export type SkillItem = ItemIdentity & { uid: number; skill: SkillId; rank: number };
+export type State = { coins:number; equipment:Equipment; skillSlots:(number|null)[]; village: Village; springReadyAt?: number; inventory: SkillItem[]; nextItem: number; pity: Record<Kind, number>; caveWins: number; caveSector: number; visited: number[]; version: 4; level: number; xp: number; kills: number; essence: number; bossWins: number; fragments: Record<Kind, number>; unlocked: Record<SkillId, boolean>; equipped: SkillId[] };
+export const fresh = (): State => ({ coins:0, equipment:freshEquipment(), skillSlots:[null,null,null], village: freshVillage(), inventory: [], nextItem: 1, pity: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, caveWins: 0, caveSector: 0, visited: [0], version: 4, level: 1, xp: 0, kills: 0, essence: 0, bossWins: 0, fragments: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, unlocked: Object.fromEntries(skillIds.map(k => [k, false])) as Record<SkillId, boolean>, equipped: [] });
 const record = (v: unknown): Record<string, unknown> => v && typeof v === 'object' ? v as Record<string, unknown> : {};
 const integer = (v: unknown, fallback = 0, max = 1e9) => typeof v === 'number' && Number.isInteger(v) && v >= 0 ? Math.min(v, max) : fallback;
 export function migrate(raw: unknown): State {
   const r = record(raw), result = fresh();
-  result.village=readVillage(r.village);
+  result.village=readVillage(r.village);result.coins=integer(r.coins);
+  const identities=new Set<string>();
   result.level = Math.max(1, integer(r.level, 1, 10000));
   result.xp = integer(r.xp); result.kills = integer(r.kills);
   result.essence = integer(r.essence); result.bossWins = integer(r.bossWins);
@@ -76,21 +78,37 @@ export function migrate(raw: unknown): State {
   if(r.springReadyAt!==undefined)result.springReadyAt=integer(r.springReadyAt,0,1e15);
   result.visited = Array.isArray(r.visited) ? [...new Set([0,...r.visited.filter((n): n is number => typeof n==='number' && Number.isInteger(n) && n>=0 && n<7)])] : [0];
   for(const k of kinds) result.pity[k]=integer(record(r.pity)[k],0,7);
-  if(r.version===3 && Array.isArray(r.inventory)) {
+  if((r.version===3||r.version===4) && Array.isArray(r.inventory)) {
     const used=new Set<number>();
     for(const raw of r.inventory.slice(0,20000)) {
       const item=record(raw);if(!skillIds.includes(item.skill as SkillId))continue;
       const copy=addItem(result,item.skill as SkillId,Math.max(1,integer(item.rank,1,9)));
+      Object.assign(copy,readIdentity(item,identities));
       const uid=integer(item.uid,copy.uid);if(uid>0&&!used.has(uid))copy.uid=uid;
       while(used.has(copy.uid))copy.uid++;
       used.add(copy.uid);result.nextItem=Math.max(result.nextItem,copy.uid+1);
     }
-    result.nextItem=Math.max(result.nextItem,integer(r.nextItem,1));
   } else { for(const id of skillIds) if(result.unlocked[id]) addItem(result,id); }
-  const equipped = Array.isArray(r.equipped) ? r.equipped : typeof r.equipped === 'string' ? [r.equipped] : [];
-  for (const id of equipped) if (skillIds.includes(id) && result.unlocked[id as SkillId] && !result.equipped.includes(id as SkillId)) toggleEquip(result, id as SkillId);
+  if(r.version===4) {
+    if(Array.isArray(r.skillSlots))for(let slot=0;slot<SLOT_LIMIT;slot++){const uid=r.skillSlots[slot];if(typeof uid==='number')equipSkillItem(result,uid,slot);}
+    const gear=record(r.equipment),slots=record(gear.slots);
+    const used=new Set(result.inventory.map(i=>i.uid));
+    if(Array.isArray(gear.items))for(const rawItem of gear.items.slice(0,20000)){
+      const i=record(rawItem);if(!gearSlots.includes(i.slot as typeof gearSlots[number]))continue;
+      const item=addGear(result,i.slot as typeof gearSlots[number],Math.max(1,integer(i.tier,1,3)),'legacy');
+      Object.assign(item,readIdentity(i,identities));
+      const uid=integer(i.uid,item.uid);if(uid>0&&!used.has(uid))item.uid=uid;
+      while(used.has(item.uid))item.uid++;used.add(item.uid);result.nextItem=Math.max(result.nextItem,item.uid+1);
+    }
+    for(const slot of gearSlots){const uid=slots[slot];if(typeof uid==='number'&&result.equipment.items.some(i=>i.uid===uid&&i.slot===slot))result.equipment.slots[slot]=uid;}
+  } else {
+    const equipped = Array.isArray(r.equipped) ? r.equipped : typeof r.equipped === 'string' ? [r.equipped] : [];
+    for (const id of equipped) if (skillIds.includes(id) && !result.equipped.includes(id as SkillId)) toggleEquip(result,id as SkillId);
+    for(const slot of ['weapon','armor'] as const)if(result.village[slot]>0){const item=addGear(result,slot,result.village[slot],'legacy');result.equipment.slots[slot]=item.uid;}
+  }
+  result.nextItem=Math.max(result.nextItem,integer(r.nextItem,1));
   // Old fragments already earned remain useful in the new economy.
-  if (r.version !== 2 && r.version !== 3) result.essence = result.kills;
+  if (r.version !== 2 && r.version !== 3 && r.version !== 4) result.essence = result.kills;
   return result;
 }
 export const neededXp = (state: State) => 40 + (state.level - 1) * 20;
@@ -104,11 +122,21 @@ export function equipError(state: State, id: SkillId): string | null {
   if (energyUsed(state) + skills[id].cost > CAPACITY) return 'Capacidade de magia insuficiente: limite de 6 pontos.';
   return null;
 }
+export function syncSkillSlots(s:State){s.equipped=s.skillSlots.flatMap(uid=>{const item=s.inventory.find(i=>i.uid===uid);return item?[item.skill]:[];});}
+export function skillItemError(s:State,uid:number,slot:number):string|null{
+ const item=s.inventory.find(i=>i.uid===uid);if(!item)return 'Cópia indisponível.';
+ if(!Number.isInteger(slot)||slot<0||slot>=SLOT_LIMIT)return 'Slot inválido.';
+ if(s.skillSlots.some((other,n)=>n!==slot&&s.inventory.find(i=>i.uid===other)?.skill===item.skill))return 'Esta habilidade já está alocada em outro slot.';
+ const cost=s.skillSlots.reduce<number>((sum,other,n)=>sum+(n===slot?0:skills[s.inventory.find(i=>i.uid===other)?.skill as SkillId]?.cost??0),0);
+ return cost+skills[item.skill].cost>CAPACITY?'Capacidade de magia insuficiente: limite de 6 pontos.':null;
+}
+export function equipSkillItem(s:State,uid:number,slot:number){if(skillItemError(s,uid,slot))return false;s.skillSlots[slot]=uid;syncSkillSlots(s);return true;}
+export function removeSkillSlot(s:State,slot:number){if(!Number.isInteger(slot)||slot<0||slot>=SLOT_LIMIT)return false;s.skillSlots[slot]=null;syncSkillSlots(s);return true;}
 export function toggleEquip(state: State, id: SkillId): boolean {
-  if (equipError(state, id)) return false;
-  if (state.equipped.includes(id)) state.equipped = state.equipped.filter(k => k !== id);
-  else state.equipped.push(id);
-  return true;
+ if(state.equipped.includes(id)){const slot=state.skillSlots.findIndex(uid=>state.inventory.find(i=>i.uid===uid)?.skill===id);if(slot>=0)removeSkillSlot(state,slot);else state.equipped=state.equipped.filter(k=>k!==id);return true;}
+ if(equipError(state,id))return false;
+ const item=[...state.inventory].filter(i=>i.skill===id).sort((a,b)=>b.rank-a.rank)[0];
+ return item?equipSkillItem(state,item.uid,state.skillSlots.indexOf(null)):false;
 }
 export function fusionError(state: State, id: FusionId): string | null {
   const [a,b]=recipes[id].parents;
@@ -121,12 +149,12 @@ export function fuse(state: State,id:FusionId):boolean {
 }
 export const drops: Record<Kind, SkillId[]> = Object.fromEntries(kinds.map(k=>[k,[k]])) as Record<Kind, SkillId[]>;
 drops.spider=['spider','steel'];drops.bat=['bat','ultrasound'];drops.serpent=['serpent','heat'];drops.armorsaurus=['armorsaurus','strength'];
-export function addItem(state:State,skill:SkillId,rank=1):SkillItem {
- const item={uid:state.nextItem++,skill,rank};state.inventory.push(item);state.unlocked[skill]=true;return item;
+export function addItem(state:State,skill:SkillId,rank=1,origin:ItemOrigin='hunt',parents:string[]=[]):SkillItem {
+ const item={...identity(origin,parents),uid:state.nextItem++,skill,rank};state.inventory.push(item);state.unlocked[skill]=true;return item;
 }
 export const itemStage=(rank:number)=>['Inicial','Superior','Evoluída'][Math.floor((rank-1)/3)];
 export const itemLabel=(item:SkillItem)=>`${skills[item.skill].name} · ${itemStage(item.rank)} ${((item.rank-1)%3)+1}`;
-export function skillRank(state:State,id:SkillId){return Math.max(1,...state.inventory.filter(i=>i.skill===id).map(i=>i.rank));}
+export function skillRank(state:State,id:SkillId){const allocated=state.skillSlots.map(uid=>state.inventory.find(i=>i.uid===uid)).find(i=>i?.skill===id);return allocated?.rank??Math.max(1,...state.inventory.filter(i=>i.skill===id).map(i=>i.rank));}
 export const skillPower=(state:State,id:SkillId)=>1+(skillRank(state,id)-1)*.18;
 export const mixRecipes: {inputs:[SkillId,SkillId];output:SkillId}[] = [
  ...fusionIds.map(id=>({inputs:recipes[id].parents,output:id})),
@@ -135,27 +163,34 @@ export const mixRecipes: {inputs:[SkillId,SkillId];output:SkillId}[] = [
  {inputs:['waterBlade','wisp'],output:'conductor'},
  {inputs:['spider','steel'],output:'binding'},
 ];
-export function mix(state:State,a:number,b:number):{ok:boolean;message:string;item?:SkillItem} {
+export type MixPreview={ok:boolean;message:string;skill?:SkillId;rank?:number};
+export function previewMix(state:State,a:number,b:number):MixPreview {
  if(a===b)return {ok:false,message:'Escolha duas cópias diferentes.'};
  const first=state.inventory.find(i=>i.uid===a),second=state.inventory.find(i=>i.uid===b);
- if(!first||!second)return {ok:false,message:'Uma das cópias não está mais disponível.'};
- let output:SkillId,rank:number;
- if(first.skill===second.skill) {
-  if(first.rank!==second.rank)return {ok:false,message:'Cópias da mesma habilidade precisam ter o mesmo nível.'};
-  if(first.rank===9)return {ok:false,message:'Essa habilidade já atingiu o estágio máximo.'};
-  output=first.skill;rank=first.rank+1;
- } else {
+ if(!first||!second)return {ok:false,message:'Selecione dois itens disponíveis.'};
+ if(first.favorite||second.favorite)return {ok:false,message:'Remova a proteção de favorito antes de fundir.'};
+ if(state.skillSlots.includes(a)||state.skillSlots.includes(b))return {ok:false,message:'Desequipe os ingredientes antes de fundir.'};
+ let skill:SkillId,rank:number;
+ if(first.skill===second.skill){
+  if(first.rank!==second.rank)return {ok:false,message:'Cópias iguais precisam ter o mesmo nível.'};
+  if(first.rank>=9)return {ok:false,message:'Essa habilidade já está no nível máximo.'};
+  skill=first.skill;rank=first.rank+1;
+ }else{
   const recipe=mixRecipes.find(r=>r.inputs.includes(first.skill)&&r.inputs.includes(second.skill));
-  if(!recipe)return {ok:false,message:'As essências não reagiram. Nenhuma cópia foi consumida.'};
-  output=recipe.output;rank=Math.min(first.rank,second.rank);
+  if(!recipe)return {ok:false,message:'Combinação incompatível. Nenhum item será consumido.'};
+  skill=recipe.output;rank=Math.min(first.rank,second.rank);
  }
+ return {ok:true,skill,rank,message:`${skills[skill].name} · Nv. ${rank} · ${skills[skill].cost} magia. Consome apenas as duas cópias selecionadas.`};
+}
+export function mix(state:State,a:number,b:number):{ok:boolean;message:string;item?:SkillItem} {
+ const preview=previewMix(state,a,b);if(!preview.ok)return {ok:false,message:preview.message};
+ const parents=[state.inventory.find(i=>i.uid===a)!.instanceId,state.inventory.find(i=>i.uid===b)!.instanceId];
  state.inventory=state.inventory.filter(i=>i.uid!==a&&i.uid!==b);
- const item=addItem(state,output,rank);
- state.equipped=state.equipped.filter(id=>state.inventory.some(i=>i.skill===id));
+ const item=addItem(state,preview.skill!,preview.rank!,'fusion',parents);
  return {ok:true,message:`Síntese concluída: ${itemLabel(item)}!`,item};
 }
 export function awardKill(state: State, kind: Kind, roll = Math.random(), lootRoll=Math.random()): { unlocked: boolean; levels: number; item?: SkillItem } {
- villageLoot(state,kind);state.kills++;state.essence++;state.xp+=creatures[kind].xp;state.fragments[kind]++;state.pity[kind]++;
+ villageLoot(state,kind);state.coins+=2;state.kills++;state.essence++;state.xp+=creatures[kind].xp;state.fragments[kind]++;state.pity[kind]++;
  let item:SkillItem|undefined;let unlocked=false;
  if(roll<.25+villageBonuses(state).absorb||state.pity[kind]>=GUARANTEE){const table=drops[kind];const id=table[Math.min(table.length-1,Math.floor(Math.max(0,lootRoll)*table.length))];unlocked=!state.unlocked[id];item=addItem(state,id);state.pity[kind]=0;}
  return {unlocked,levels:applyLevels(state),item};

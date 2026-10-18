@@ -1,3 +1,4 @@
+import { addGear, gearBonuses, type GearSlot } from './equipment.ts';
 import type { State, Kind } from './model.ts';
 
 export const materialIds=['timber','ore','silk','herbs'] as const;
@@ -32,7 +33,11 @@ export const afford=(v:Village,cost:Partial<Record<Material,number>>)=>materialI
 function pay(v:Village,cost:Partial<Record<Material,number>>){if(!afford(v,cost))return false;for(const id of materialIds)v.materials[id]-=cost[id]??0;return true;}
 export function upgradeBuilding(s:State,id:Building):boolean {const v=s.village;if(!v.founded||v.buildings[id]>=3||!pay(v,buildingCost(id,v.buildings[id])))return false;v.buildings[id]++;return true;}
 export const gearCost=(level:number):Partial<Record<Material,number>>=>({ore:8*(level+1),silk:5*(level+1)});
-export function craftGear(s:State,slot:'weapon'|'armor'):boolean{const v=s.village;if(!v.artisan||!v.buildings.workshop||v[slot]>=v.buildings.workshop||!pay(v,gearCost(v[slot])))return false;v[slot]++;return true;}
+export function craftGear(s:State,slot:GearSlot):boolean{
+ const v=s.village,tier=v.buildings.workshop;
+ if(!v.founded||!v.artisan||!tier||!pay(v,gearCost(tier-1)))return false;
+ addGear(s,slot,tier);return true;
+}
 export function brewTonic(s:State,now=Date.now()):boolean{const v=s.village;if(!v.buildings.alchemy||v.tonicUntil>now||!pay(v,{herbs:8}))return false;v.tonicUntil=now+600000;return true;}
 export function villageLoot(s:State,kind:Kind){
  const m=s.village.materials;
@@ -41,4 +46,4 @@ export function villageLoot(s:State,kind:Kind){
  else if(kind==='armorsaurus'||kind==='beetle'||kind==='centipede')m.ore++;
  else m.herbs++;
 }
-export function villageBonuses(s:State,now=Date.now()) {const v=s.village;return {defense:v.buildings.workshop*.04+v.armor*.05,attack:v.weapon*.08,haste:v.buildings.lab*.05,absorb:v.buildings.lab*.02,regen:v.buildings.alchemy*.75+(v.tonicUntil>now?3:0)};}
+export function villageBonuses(s:State,now=Date.now()) {const v=s.village,g=gearBonuses(s);return {defense:v.buildings.workshop*.04+g.defense,attack:g.attack,haste:v.buildings.lab*.05+g.haste,absorb:v.buildings.lab*.02,regen:v.buildings.alchemy*.75+g.regen+(v.tonicUntil>now?3:0)};}

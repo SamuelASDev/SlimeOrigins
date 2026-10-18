@@ -12,9 +12,9 @@ test('cópias repetidas continuam caindo e a garantia reinicia após cada absor�
 });
 test('evolução consome exatamente duas cópias, muda de estágio e melhora o efeito',()=>{
  const s=fresh();const a=addItem(s,'heat',3),b=addItem(s,'heat',3);toggleEquip(s,'heat');
- const before=skillPower(s,'heat');const result=mix(s,a.uid,b.uid);
+ const before=skillPower(s,'heat');assert.equal(mix(s,a.uid,b.uid).ok,false);toggleEquip(s,'heat');const result=mix(s,a.uid,b.uid);
  assert.equal(result.ok,true);assert.equal(result.item?.rank,4);assert.equal(itemStage(4),'Superior');
- assert.equal(s.inventory.length,1);assert.deepEqual(s.equipped,['heat']);assert.ok(skillPower(s,'heat')>before);
+ assert.equal(s.inventory.length,1);toggleEquip(s,'heat');assert.deepEqual(s.equipped,['heat']);assert.ok(skillPower(s,'heat')>before);
  const c=addItem(s,'heat',6),d=addItem(s,'heat',6);assert.equal(mix(s,c.uid,d.uid).item?.rank,7);assert.equal(itemStage(7),'Evoluída');
 });
 test('inválidos, mesma cópia, níveis diferentes e limite máximo não consomem inventário',()=>{
@@ -22,9 +22,10 @@ test('inválidos, mesma cópia, níveis diferentes e limite máximo não consome
  const s=fresh(),a=addItem(s,'steel'),b=addItem(s,'bat');const before=JSON.stringify(s);
  for(const [x,y] of [[a.uid,a.uid],[a.uid,99999],[a.uid,b.uid]]){assert.equal(mix(s,x,y).ok,false);assert.equal(JSON.stringify(s),before);}
 });
-test('todas as combinações funcionam nas duas ordens, preservam sobras e removem último item equipado',()=>{
+test('todas as combinações funcionam nas duas ordens, preservam sobras e protegem ingredientes equipados',()=>{
  for(const recipe of mixRecipes)for(const reverse of [false,true]){
   const s=fresh(),a=addItem(s,recipe.inputs[0]),b=addItem(s,recipe.inputs[1]),spare=addItem(s,'bat');toggleEquip(s,a.skill);
+  const before=JSON.stringify(s);assert.equal(mix(s,a.uid,b.uid).ok,false);assert.equal(JSON.stringify(s),before);toggleEquip(s,a.skill);
   const out=mix(s,reverse?b.uid:a.uid,reverse?a.uid:b.uid);
   assert.equal(out.item?.skill,recipe.output);assert.equal(s.inventory.length,2);assert.ok(s.inventory.some(i=>i.uid===spare.uid));assert.ok(!s.equipped.includes(a.skill));
  }

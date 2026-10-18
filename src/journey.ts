@@ -13,7 +13,7 @@ export function offlineReward(state:State,checkpoint:unknown,now=Date.now()){
 export function decodeSave(text:string):State{
  if(text.length>5_000_000)throw new Error('Arquivo muito grande.');
  const raw=JSON.parse(text),data=raw?.state??raw;
- if(!data||typeof data!=='object'||![1,2,3].includes(data.version)||!Number.isFinite(data.level)||!Number.isFinite(data.kills))throw new Error('Save incompatível ou inválido.');
+ if(!data||typeof data!=='object'||![1,2,3,4].includes(data.version)||!Number.isFinite(data.level)||!Number.isFinite(data.kills))throw new Error('Save incompatível ou inválido.');
  return migrate(data);
 }
 export function nextObjective(s:State):{text:string;panel:string}{

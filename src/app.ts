@@ -143,6 +143,7 @@ function updateLiveCounters(){
  put('inventory-coins',`◉ ${state.coins} moedas`);
  put('collection',`${state.inventory.length} cópias · ${state.coins} moedas`);
  document.querySelectorAll<HTMLElement>('[data-resource-count]').forEach(node=>{const text=String(state.village.materials[node.dataset.resourceCount as Material]??0);if(node.textContent!==text)node.textContent=text;});
+ put('fusion-pending',pendingLoot?`${pendingLoot} novas cópias recebidas. Atualize a mochila para incluí-las.`:'As combinações usam as cópias atuais da mochila.');
  put('pending-loot-text',pendingLoot?`${pendingLoot} ${pendingLoot===1?'nova cópia recebida':'novas cópias recebidas'} na mochila`:'Mochila atualizada · caça independente');
  el('pending-loot').classList.toggle('has-new',pendingLoot>0);el('show-new-loot').style.visibility=pendingLoot?'visible':'hidden';
 }
@@ -259,7 +260,7 @@ class Meadow extends WorldScene {
     this.player.setPosition(next.x,next.y).setFlipX(Math.cos(a)<0);return true;
   }
   strikes: { owner: Enemy; remaining: number; aim: { x: number; y: number }; spec: AttackSpec; damage: number }[] = [];
-  preload() { preloadSpriteArt(this);this.load.atlas('forestDecor','/assets/sprites/forest-decor-anime-v2.png','/assets/sprites/forest-decor-anime-v2.json'); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveDecor','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-decor-v2.json'); }
+  preload() { preloadSpriteArt(this);this.load.atlas('forestDecor','/assets/sprites/forest-decor-anime-v3.png','/assets/sprites/forest-decor-anime-v3.json'); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveDecor','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-decor-v2.json'); }
   create() {
     this.frameBudget.reset(performance.now());
     this.events.on('wake',()=>{this.frameBudget.reset(performance.now());this.routeWatchdog.reset();});
@@ -651,6 +652,7 @@ setTimeout(()=>{if(offlineSummary){log(offlineSummary,true);offlineSummary='';}}
 el('import-save-text-button').onclick=()=>{try{stageRestore((el('import-save-text') as HTMLTextAreaElement).value);}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível restaurar o save.');}};
 
 el('show-new-loot').onclick=()=>{pendingLoot=0;renderMenus();};
+document.addEventListener('slime:synthesis-rendered',()=>{pendingLoot=0;updateLiveCounters();});
 document.addEventListener('slime:bag-rendered',()=>{pendingLoot=0;updateLiveCounters();});
 
 function openMerchant(){if(!inVillage){log('Visite Myourmiles na vila para negociar.');return;}if(!state.village.founded){openVillageBuilding('workshop');log('Estabeleça a vila para receber a caravana.');return;}if(activePanel==='merchant-panel')renderMenus();else togglePanel('merchant-panel');save();}

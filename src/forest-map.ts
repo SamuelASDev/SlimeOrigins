@@ -16,6 +16,7 @@ const key=(x:number,y:number)=>`${x},${y}`;
 const carve=(x0:number,y0:number,x1:number,y1:number,path=false)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){forestFloor.add(key(x,y));if(path)forestPaths.add(key(x,y));}};
 for(const r of forestRegions)for(let dy=-14;dy<=14;dy++){const inset=Math.abs(dy)>11?5:Math.abs(dy)>8?2:0;carve(r.x-18+inset,r.y+dy,r.x+18-inset,r.y+dy);}
 for(let i=1;i<forestRegions.length;i++){const a=forestRegions[i-1],b=forestRegions[i];carve(a.x,a.y-2,b.x,a.y+2,true);carve(b.x-2,Math.min(a.y,b.y)-2,b.x+2,Math.max(a.y,b.y)+2,true);}
+export const forestGround=new Set(forestFloor);
 // A real pond with a dry crossing along the main east/west trail.
 const river=forestRegions[1];for(let dy=-10;dy<=10;dy++)for(let dx=-6;dx<=3;dx++)if((dx+1.5)**2/25+dy**2/110<1&&Math.abs(dy)>2){const k=key(river.x+dx,river.y+dy);forestFloor.delete(k);forestWater.add(k);}
 export const forestObstacles=forestRegions.flatMap((r,zone)=>[[-10,-7],[10,7],[-11,7],[11,-7]].map(([dx,dy],i)=>({x:r.x+dx,y:r.y+dy,zone,frame:zone===3?'iron':zone===5?'crystal':zone===1?'willow':'oak',i})));

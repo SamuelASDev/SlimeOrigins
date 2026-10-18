@@ -40,3 +40,14 @@ test('recompensas offline e expedição oculta conservam o habitat do checkpoint
  const result=offlineReward(s,c,121000);assert.equal(result.kills,12);assert.equal(s.village.materials.herbs,12);assert.equal(s.village.materials.hide,12);assert.equal(s.village.materials.timber,0);
  const away=new BackgroundExpedition(c);assert.equal(away.claim(21000),2);assert.deepEqual(away.checkpoint(21000).context,c.context);
 });
+
+import {forestGround,forestObstacles as obstacleRoots} from '../src/forest-map.ts';
+import {forestEdgeTrees,forestDecorations} from '../src/forest-layout.ts';
+test('chão continua desenhado sob raízes e rochas sem abrir buracos no terreno',()=>{
+ for(const p of obstacleRoots){const tile=`${p.x},${p.y}`;assert.ok(forestGround.has(tile));assert.equal(forestFloor.has(tile),false);}
+});
+test('árvores de borda e decoração têm espaçamento e bases coerentes com o terreno',()=>{
+ assert.ok(forestEdgeTrees.length>20);assert.ok(forestDecorations.length>=12);
+ for(let i=0;i<forestEdgeTrees.length;i++){const a=forestEdgeTrees[i];for(const b of forestEdgeTrees.slice(i+1))assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=128);}
+ for(const p of forestDecorations){assert.ok(forestNav.walkable(p));for(const root of obstacleRoots)assert.ok(Math.hypot(root.x*CELL+16-p.x,root.y*CELL+48-p.y)>=140);}
+});

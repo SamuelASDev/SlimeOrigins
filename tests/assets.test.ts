@@ -72,3 +72,10 @@ test('atlas de Jura possui seis props completos com recortes dentro das células
  assert.deepEqual(Object.keys(atlas.frames),['oak','willow','iron','crystal','herbs','log']);
  for(const [i,item] of Object.values(atlas.frames).entries() as ArrayIterator<[number,any]>){const {x,y,w,h}=item.frame;assert.ok(w>0&&h>0);assert.ok(x>=i%3*512&&x+w<=(i%3+1)*512);assert.ok(y>=Math.floor(i/3)*512&&y+h<=(Math.floor(i/3)+1)*512);}
 });
+
+test('props revisados de Jura não cortam vizinhos e têm âncoras independentes',()=>{
+ const file='forest-decor-anime-v3',png=readFileSync(new URL(file+'.png',dir)),atlas=JSON.parse(readFileSync(new URL(file+'.json',dir),'utf8'));
+ assert.equal(png[25],6);assert.equal(png.readUInt32BE(16),atlas.meta.size.w);assert.equal(png.readUInt32BE(20),atlas.meta.size.h);
+ assert.deepEqual(Object.keys(atlas.frames),['oak','willow','iron','crystal','herbs','log']);
+ for(const [i,item] of Object.values(atlas.frames).entries() as ArrayIterator<[number,any]>){const {x,y,w,h}=item.frame,left=i%3*512,top=Math.floor(i/3)*512;assert.ok(x-left>=20&&y-top>=20&&left+512-x-w>=20&&top+512-y-h>=20);assert.deepEqual(item.sourceSize,{w,h});assert.deepEqual(item.spriteSourceSize,{x:0,y:0,w,h});assert.equal(item.trimmed,false);}
+});

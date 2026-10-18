@@ -2,8 +2,8 @@
 import { gearValue, gearNames } from './equipment.ts';
 import { materialIds, type Material } from './village.ts';
 export const skillValue=(item:SkillItem)=>8*item.rank*item.rank;
-export function sellItem(s:State,kind:'skill'|'gear',uid:number){
- if(!s.village.founded)return {ok:false,message:'Funde a vila para negociar com o mercador.'};
+export function sellItem(s:State,kind:'skill'|'gear',uid:number,atVillage=false){
+ if(!atVillage||!s.village.founded)return {ok:false,message:'Funde a vila para negociar com o mercador.'};
  const item=kind==='skill'?s.inventory.find(i=>i.uid===uid):s.equipment.items.find(i=>i.uid===uid);
  if(!item)return {ok:false,message:'Este item não está mais disponível.'};
  if(item.favorite)return {ok:false,message:'Item favorito protegido. Remova a estrela antes de vender.'};
@@ -12,13 +12,4 @@ export function sellItem(s:State,kind:'skill'|'gear',uid:number){
  const name='skill' in item?skills[item.skill].name:gearNames[item.slot];
  if(kind==='skill')s.inventory=s.inventory.filter(i=>i.uid!==uid);else s.equipment.items=s.equipment.items.filter(i=>i.uid!==uid);
  s.coins+=value;return {ok:true,message:`${name} vendido por ${value} moedas.`};
-}
-export const merchantSkills:SkillId[]=['beetle','wolf','mushroom'];
-export function buySkill(s:State,id:SkillId){
- if(!s.village.founded||!merchantSkills.includes(id)||s.coins<80)return false;
- s.coins-=80;addItem(s,id,1,'merchant');return true;
-}
-export function buyMaterials(s:State,id:Material){
- if(!s.village.founded||!materialIds.includes(id)||s.coins<30)return false;
- s.coins-=30;s.village.materials[id]+=5;return true;
 }

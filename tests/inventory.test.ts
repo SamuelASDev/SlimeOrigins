@@ -2,7 +2,8 @@
 import assert from 'node:assert/strict';
 import {fresh,migrate,addItem,equipSkillItem,removeSkillSlot,skillRank,energyUsed,mix,previewMix,effects} from '../src/model.ts';
 import {addGear,equipGear,gearBonuses} from '../src/equipment.ts';
-import {sellItem,buySkill,buyMaterials} from '../src/economy.ts';
+import {sellItem} from '../src/economy.ts';
+import {purchaseOffer,marketOffers} from '../src/market.ts';
 import {craftGear} from '../src/village.ts';
 test('slots usam a cópia exata; substituição respeita capacidade e não equipa duplicadas',()=>{
  const s=fresh(),weak=addItem(s,'heat',1),strong=addItem(s,'heat',9),a=addItem(s,'miasma'),b=addItem(s,'conductor');
@@ -31,13 +32,13 @@ test('migração converte componentes antigos sem dobrar bônus e mantém identi
 });
 test('mercador vende apenas uma cópia livre, preserva descobertas e impede venda repetida',()=>{
  const s=fresh();s.village.founded=true;const a=addItem(s,'heat',2),b=addItem(s,'heat',1);equipSkillItem(s,a.uid,0);
- const before=JSON.stringify(s);assert.equal(sellItem(s,'skill',a.uid).ok,false);assert.equal(JSON.stringify(s),before);
- b.favorite=true;assert.equal(sellItem(s,'skill',b.uid).ok,false);b.favorite=false;
- assert.equal(sellItem(s,'skill',b.uid).ok,true);assert.equal(s.coins,8);assert.equal(sellItem(s,'skill',b.uid).ok,false);assert.equal(s.coins,8);assert.equal(s.unlocked.heat,true);assert.equal(s.skillSlots[0],a.uid);
- const gear=addGear(s,'armor',2);equipGear(s,gear.uid);assert.equal(sellItem(s,'gear',gear.uid).ok,false);equipGear(s,gear.uid);assert.equal(sellItem(s,'gear',gear.uid).ok,true);assert.equal(s.coins,88);
+ const before=JSON.stringify(s);assert.equal(sellItem(s,'skill',a.uid,true).ok,false);assert.equal(JSON.stringify(s),before);
+ b.favorite=true;assert.equal(sellItem(s,'skill',b.uid,true).ok,false);b.favorite=false;
+ assert.equal(sellItem(s,'skill',b.uid,true).ok,true);assert.equal(s.coins,8);assert.equal(sellItem(s,'skill',b.uid,true).ok,false);assert.equal(s.coins,8);assert.equal(s.unlocked.heat,true);assert.equal(s.skillSlots[0],a.uid);
+ const gear=addGear(s,'armor',2);equipGear(s,gear.uid);assert.equal(sellItem(s,'gear',gear.uid,true).ok,false);equipGear(s,gear.uid);assert.equal(sellItem(s,'gear',gear.uid,true).ok,true);assert.equal(s.coins,88);
 });
 test('compras não cobram saldo insuficiente; materiais e runas chegam à mochila',()=>{
- const s=fresh();s.coins=200;assert.equal(buySkill(s,'wolf'),false);s.village.founded=true;assert.equal(buySkill(s,'wolf'),true);assert.equal(s.coins,120);assert.equal(s.inventory[0].origin,'merchant');assert.equal(buySkill(s,'miasma'),false);assert.equal(buyMaterials(s,'ore'),true);assert.equal(s.village.materials.ore,5);assert.equal(s.coins,90);s.coins=10;const before=JSON.stringify(s);assert.equal(buyMaterials(s,'ore'),false);assert.equal(buySkill(s,'wolf'),false);assert.equal(JSON.stringify(s),before);
+ const s=fresh();s.coins=200;assert.equal(purchaseOffer(s,'0:rune-1',true,0).ok,false);s.village.founded=true;assert.equal(purchaseOffer(s,'0:rune-1',true,0).ok,true);assert.equal(s.coins,120);assert.equal(s.inventory[0].origin,'merchant');assert.equal(purchaseOffer(s,'0:invalid',true,0).ok,false);assert.equal(purchaseOffer(s,'0:material-ore',true,0).ok,true);assert.equal(s.village.materials.ore,5);assert.equal(s.coins,90);s.coins=10;const before=JSON.stringify(s);assert.equal(purchaseOffer(s,'0:material-ore',true,0).ok,false);assert.equal(purchaseOffer(s,'0:rune-1',true,0).ok,false);assert.equal(JSON.stringify(s),before);
 });
 test('forja entrega cópias independentes e preserva moedas e materiais em falha',()=>{
  const s=fresh();s.village.founded=true;s.village.artisan=true;s.village.buildings.workshop=2;s.village.materials.ore=100;s.village.materials.silk=100;

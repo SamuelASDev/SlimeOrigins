@@ -61,6 +61,8 @@ A **Floresta de Jura** agora tem seis regiões conectadas, trilhas, lago e obst�
 
 O atlas separa caverna e floresta em abas com informações padronizadas. Criaturas, sombras, barras e alcance dos golpes têm proporções próprias em relação ao slime: [atlas e proporções](documentação/atlas-e-proporcoes.md).
 
+A síntese apresenta somente combinações possíveis com cópias livres da mochila. Jura recebeu recortes independentes, margens e organização da vegetação: [revisão da síntese e dos sprites](documentação/sintese-e-jura-revisao.md).
+
 Em **Opções**, exporte e importe o save JSON e ative o áudio. O objetivo acima da barra de caça orienta a progressão; clique nele para abrir a próxima ação.
 
 A vila agora utiliza cenário e folhas animadas geradas no mesmo estilo anime pixel art dos monstros: veja [arte da vila e moradores](documentação/vila-sprites-anime-v2.md).

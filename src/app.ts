@@ -260,7 +260,7 @@ class Meadow extends WorldScene {
     this.player.setPosition(next.x,next.y).setFlipX(Math.cos(a)<0);return true;
   }
   strikes: { owner: Enemy; remaining: number; aim: { x: number; y: number }; spec: AttackSpec; damage: number }[] = [];
-  preload() { preloadSpriteArt(this);this.load.atlas('forestDecor','/assets/sprites/forest-decor-anime-v3.png','/assets/sprites/forest-decor-anime-v3.json'); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveDecor','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-decor-v2.json'); }
+  preload() { preloadSpriteArt(this);this.load.atlas('forestDecor','/assets/sprites/forest-decor-anime-v3.png','/assets/sprites/forest-decor-anime-v3.json'); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveProps','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-props-v3.json'); }
   create() {
     this.frameBudget.reset(performance.now());
     this.events.on('wake',()=>{this.frameBudget.reset(performance.now());this.routeWatchdog.reset();});

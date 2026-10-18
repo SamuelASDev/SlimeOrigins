@@ -57,6 +57,8 @@ A revisão anime usa as folhas `*-anime-v2.png`. Ataques agora têm preparação
 
 Planejamento completo em [documentação/planejamento.md](documentação/planejamento.md).
 
+A **Floresta de Jura** agora tem seis regiões conectadas, trilhas, lago e obstáculos, com espécies e coleta próprias de cada habitat. O Mapa mostra onde encontrar couro, presas, seda, ervas, minérios e cristais. Veja [regiões, drops e validação](documentação/floresta-de-jura.md).
+
 Em **Opções**, exporte e importe o save JSON e ative o áudio. O objetivo acima da barra de caça orienta a progressão; clique nele para abrir a próxima ação.
 
 A vila agora utiliza cenário e folhas animadas geradas no mesmo estilo anime pixel art dos monstros: veja [arte da vila e moradores](documentação/vila-sprites-anime-v2.md).

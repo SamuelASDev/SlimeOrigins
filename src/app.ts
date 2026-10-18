@@ -1,3 +1,5 @@
+import {mapMarkup,bindMapTabs,syncMapProgress} from './map-ui';
+import {actorSize,actorLayout,contactReach} from './actor-sizes';
 import {FrameBudget,BackgroundExpedition,estimateHuntInterval} from './activity';
 import {HuntWatchdog,needsApproach} from './hunt-navigation';
 import {materialNames,type Material} from './resources.ts';
@@ -87,15 +89,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 ${villageMarkup}
 ${inventoryMarkup}
 ${merchantMarkup}
-<section id="map-panel" class="game-window frame" role="dialog" aria-labelledby="map-title" hidden>
- <div class="window-header"><div><p class="label">CAPÍTULO 01 · O DESPERTAR</p><h2 id="map-title">Rotas de Jura e da Caverna</h2></div><button class="close-window" aria-label="Fechar mapa" >×</button></div>
- <div class="window-body"><label class="expedition-toggle"><input id="expedition" type="checkbox" ${state.autoExplore?'checked':''}> Explorar automaticamente após 6 abates no setor</label><p id="expedition-status" class="hint"></p><section class="jura-guide"><p class="label">CAPÍTULO 02 · A GRANDE FLORESTA</p><h3>Floresta de Jura</h3><p class="hint">Escolha uma região para seguir pelas trilhas. A coleta depende do ambiente; partes de monstros dependem da espécie derrotada.</p><div class="sector-list jura-routes">${forestRegions.map((z,i)=>`<button data-forest-sector="${i}"><b>${String(i+1).padStart(2,'0')} · ${z.name}</b><small>${z.subtitle}</small><span class="route-loot">${z.loot}</span><small>Perigo: ${z.danger} · ${[...new Set(z.monsters)].map(k=>creatures[k].name).join(', ')}</small></button>`).join('')}</div><p class="hint">Lobos terríveis patrulham o bosque e aranhas negras tecem seus ninhos nas árvores antigas. A distribuição de espécies e recursos foi adaptada para a exploração de Jura.</p></section><h3>Caverna do Selo</h3><p class="cave-intro">Sob Jura, a aura do Dragão da Tempestade alimenta monstros e minerais. Explore os corredores, absorva habilidades e encontre o selo de Veldora.</p>
- <div class="cave-overview" aria-label="Percurso da caverna">${sectors.map((z,i)=>`<button data-sector="${i}" title="${z.name}">${i+1}</button>`).join('<span>─</span>')}</div>
-
- <div class="sector-list">${sectors.map((z,i)=>`<button data-sector="${i}"><b>${String(i+1).padStart(2,'0')} · ${z.name}</b><small>${z.subtitle}</small></button>`).join('')}</div>
- <div class="cave-extras"><button id="analyze-spring" class="hunt-button">Analisar nascente · setor 1</button><p id="spring-status" class="hint"></p></div><div id="veldora-lore" class="hint">Veldora é um encontro amistoso, e não um chefe. A ordem das salas e a repetição dos monstros são adaptações para o idle.</div>
- </div><div class="window-footer">Jura: seis regiões · Caverna: sete setores · selecione um destino</div>
-</section>
+${mapMarkup(state.activeArea,state.autoExplore)}
 <section id="skills-panel" class="game-window frame" role="dialog" aria-labelledby="skills-title" hidden>
   <div class="window-header"><div><p class="label">PREDADOR / ANÁLISE</p><h2 id="skills-title">Habilidades absorvidas</h2></div><button class="close-window" aria-label="Fechar habilidades">×</button></div>
   <div class="window-body"><div class="build-summary"><div class="heading-row"><span class="label">SUA BUILD</span><span id="capacity"></span></div><div id="slot" class="build-slots"></div><p class="hint" id="build-hint"></p></div>
@@ -193,7 +187,7 @@ function renderActiveMenu() {
 
 }
 
-type Enemy = { unreachableUntil:number; zone: number; x: number; y: number; baseScale: number; action: { clock: AttackClock; aim: { x: number; y: number }; direction: { x: number; y: number } } | null; kind: Kind; boss: boolean; rooted: number; sprite: Phaser.GameObjects.Sprite; shadow: Phaser.GameObjects.Ellipse; hitUntil: number; hp: number; max: number; bar: Phaser.GameObjects.Graphics; attackAt: number; poisonUntil: number; poisonPower: number; poisonAt: number; wet: number };
+type Enemy = { unreachableUntil:number; radius:number; visualHeight:number; barWidth:number; barOffset:number; zone: number; x: number; y: number; baseScale: number; action: { clock: AttackClock; aim: { x: number; y: number }; direction: { x: number; y: number } } | null; kind: Kind; boss: boolean; rooted: number; sprite: Phaser.GameObjects.Sprite; shadow: Phaser.GameObjects.Ellipse; hitUntil: number; hp: number; max: number; bar: Phaser.GameObjects.Graphics; attackAt: number; poisonUntil: number; poisonPower: number; poisonAt: number; wet: number };
 class Meadow extends WorldScene {
   frameBudget=new FrameBudget();
   routeWatchdog=new HuntWatchdog();
@@ -270,8 +264,8 @@ class Meadow extends WorldScene {
     this.frameBudget.reset(performance.now());
     this.events.on('wake',()=>{this.frameBudget.reset(performance.now());this.routeWatchdog.reset();});
     registerSpriteAnimations(this);
-    this.playerShadow = this.add.ellipse(400, 240, 34, 9, 0x10291e, .3);
-    this.player = makeActor(this, 400, 240, 'slime', 44);
+    this.playerShadow = this.add.ellipse(400, 240, actorSize('slime').radius*2, 6, 0x10291e, .3);
+    this.player = makeActor(this, 400, 240, 'slime');
     this.playerBaseScale = this.player.scaleX;
     this.combatFX = new CombatEffects(this);
     this.warning = this.add.graphics().setDepth(19);
@@ -290,8 +284,9 @@ class Meadow extends WorldScene {
     if(this.area==='forest'){const points=forestSpawnPoints(zone),p=boss?forestCenter(zone):Phaser.Utils.Array.GetRandom(points);x=p.x;y=p.y;}
     if(boss&&this.caveBoss){const c=center(4);x=c.x+115;y=c.y;}
     const hp = boss ? (this.caveBoss?780:560) + this.bossLevel * (this.caveBoss?45:20) : creatures[kind].hp;
-    const sprite = makeActor(this, x, y, boss ? this.caveBoss?'caveBoss':'guardian' : creatures[kind].texture, boss ? this.caveBoss?120:86 : kind==='spider'?54:43);
-    const enemy: Enemy = { unreachableUntil:0, x, y, zone, rooted: 0, baseScale: sprite.scaleX, action: null, kind, boss, sprite, shadow: this.add.ellipse(x, y, boss ? 65 : 32, boss ? 15 : 8, 0x10291e, .3), hitUntil: 0, hp, max: hp, bar: this.add.graphics().setDepth(20), attackAt: Phaser.Math.Between(250, 550), poisonUntil: 0, poisonPower: 1, poisonAt: 1000, wet: 0 };
+    const art=boss?(this.caveBoss?'caveBoss':'guardian'):creatures[kind].texture;
+    const sprite=makeActor(this,x,y,art),frame=sprite.frame,layout=actorLayout(art,{w:frame.cutWidth,h:frame.cutHeight});
+    const enemy: Enemy = { unreachableUntil:0,radius:layout.radius,visualHeight:layout.height,barWidth:layout.barWidth,barOffset:layout.barOffset, x, y, zone, rooted: 0, baseScale: sprite.scaleX, action: null, kind, boss, sprite, shadow: this.add.ellipse(x, y, layout.shadowWidth, layout.shadowHeight, 0x10291e, .3), hitUntil: 0, hp, max: hp, bar: this.add.graphics().setDepth(20), attackAt: Phaser.Math.Between(250, 550), poisonUntil: 0, poisonPower: 1, poisonAt: 1000, wet: 0 };
     this.enemies.push(enemy); return enemy;
   }
   clearEncounter() { this.generation++; this.combatFX?.clear(); this.strikes = []; this.playerAttack = null; this.playerPose = 0; this.playerHit = 0; this.player.clearTint().setScale(this.playerBaseScale); for (const e of this.enemies) { e.sprite.destroy(); e.shadow.destroy(); e.bar.destroy(); } this.enemies = []; this.target = null; this.warning.clear(); }
@@ -328,7 +323,7 @@ class Meadow extends WorldScene {
     const damage = damageAgainst(base, type, enemy.boss, enemy.wet > 0), actual = Math.min(enemy.hp, damage);
     enemy.hp -= damage; enemy.hitUntil = 130;
     if (type !== 'poison') this.combatFX.impact(type === 'water' ? 'water' : type === 'electric' ? 'bolt' : 'slime', { x: enemy.x, y: enemy.y - 18 }, type === 'water' ? 0x8ce5f1 : type === 'electric' ? 0xf3df83 : 0xa8eaf2);
-    this.float(enemy.x, enemy.y, `${type === 'poison' ? '☣ ' : type === 'water' ? '≈ ' : type === 'electric' ? 'ϟ ' : ''}${damage}`, type === 'poison' ? '#d1a2e4' : type === 'water' ? '#93dce7' : '#f1e5ad');
+    this.float(enemy.x, enemy.y-enemy.visualHeight*.4, `${type === 'poison' ? '☣ ' : type === 'water' ? '≈ ' : type === 'electric' ? 'ϟ ' : ''}${damage}`, type === 'poison' ? '#d1a2e4' : type === 'water' ? '#93dce7' : '#f1e5ad');
     if (enemy.hp <= 0) this.defeat(enemy);
     return actual;
   }
@@ -361,10 +356,10 @@ class Meadow extends WorldScene {
     if (step.phase === 'windup') { this.player.setFrame('idle-2').setScale(this.playerBaseScale * (1 + step.progress * .09), this.playerBaseScale * (1 - step.progress * .12)); }
     else if (step.phase === 'strike') this.player.setFrame(`attack-${Math.min(2, Math.floor(step.progress * 3))}`).setScale(this.playerBaseScale);
     else this.player.setFrame('idle-0').setScale(this.playerBaseScale);
-    if (step.release) this.combatFX.slash('slime', { x: this.player.x, y: this.player.y - 14 }, { x: target.x, y: target.y - 18 }, 0x9aeaff);
+    if (step.release) this.combatFX.slash('slime', { x: this.player.x, y: this.player.y - 14 }, { x: target.x, y: target.y - target.visualHeight*.5 }, 0x9aeaff);
     if (step.impact) {
       const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, target.x, target.y);
-      if (distance < (target.boss ? 85 : 63)) {
+      if (distance < contactReach(target.radius)+20) {
         if ((state.equipped.includes('snake') || state.equipped.includes('serpent'))) {target.poisonUntil=4000;target.poisonPower=Math.max(state.equipped.includes('snake')?skillPower(state,'snake'):1,state.equipped.includes('serpent')?skillPower(state,'serpent'):1);}
         if(state.equipped.includes('centipede')) target.attackAt += 350*skillPower(state,'centipede');
         if(state.equipped.includes('spider'))target.rooted=Math.max(target.rooted,(target.boss?.35:1)*800*skillPower(state,'spider'));
@@ -400,7 +395,7 @@ class Meadow extends WorldScene {
         const aimLength = Math.max(1, Phaser.Math.Distance.Between(enemy.x, enemy.y, action.aim.x, action.aim.y));
         action.direction = { x: (action.aim.x - enemy.x) / aimLength, y: (action.aim.y - enemy.y) / aimLength };
         enemy.sprite.setFlipX(action.direction.x < 0);
-        const origin = { x: enemy.x + action.direction.x * 16, y: enemy.y - (enemy.boss ? 30 : 18) };
+        const origin = { x: enemy.x + action.direction.x * 16, y: enemy.y - enemy.visualHeight*.5 };
         const destination = { x: action.aim.x, y: action.aim.y - 14 };
         if (spec.ranged) this.combatFX.shot(spec.style, origin, destination, spec.color, spec.travel);
         else this.combatFX.slash(spec.style, origin, destination, spec.color);
@@ -463,8 +458,7 @@ class Meadow extends WorldScene {
     const heading=document.querySelector('.location>p');if(heading)heading.textContent=this.area==='cave'?'CAVERNA DO SELO · '+String(this.sector+1).padStart(2,'0')+'/07':'FLORESTA DE JURA · '+String(this.sector+1).padStart(2,'0')+'/06';
     put('spring-status',this.springAt>0?`Energia se renovando · ${Math.ceil(this.springAt/1000)} s`:'Água e hipokute: 1 cópia de Lâmina de água e 1 de Regeneração. Recarga de 60 s.');
     put('expedition-status',this.destination!==null?`Seguindo ${this.area==='forest'?'trilhas':'corredores'} → ${this.regions()[this.destination].name}`:`Setor ${this.sector+1}/${this.regions().length} · ${this.exploring?Math.min(6,this.sectorKills)+'/6':this.sectorKills} abates · ${this.exploring?'Exploração automática':'Caça neste setor'}`);
-    document.querySelectorAll<HTMLElement>('[data-sector]').forEach(b=>b.setAttribute('aria-current',String(this.area==='cave'&&Number(b.dataset.sector)===this.sector)));
-    document.querySelectorAll<HTMLElement>('[data-forest-sector]').forEach(b=>b.setAttribute('aria-current',String(this.area==='forest'&&Number(b.dataset.forestSector)===this.sector)));
+    syncMapProgress(this.area,this.sector,{cave:state.visited,forest:state.forestVisited});
     el('game').setAttribute('aria-label',this.area==='forest'?'Floresta de Jura: trilhas, regiões e caça automática':'Caverna do Selo: mapa de exploração e caça automática');
     if(this.destination!==null)put('target','Explorando → setor '+(this.destination+1));
     const boss = this.enemies.find(e => e.boss);
@@ -515,7 +509,7 @@ class Meadow extends WorldScene {
       }
     }
     if (this.target && !evading && !this.playerAttack) {
-      const e = this.target, reach = e.boss ? 65 : 42, distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
+      const e = this.target, reach = contactReach(e.radius), distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
       if (needsApproach(this.player,e,reach,this.navigation().clearLine(this.player,e))) { playerMoving = this.moveToward(e, dt * .065 * fx.speed); }
       else if (this.attackAt <= 0 && this.navigation().clearLine(this.player,e)) { this.attackAt = 850 / fx.haste; this.playerAttack = { clock: startAttack(), target: e }; this.player.setFlipX(e.x < this.player.x); }
     }
@@ -538,9 +532,10 @@ class Meadow extends WorldScene {
       e.rooted=Math.max(0,e.rooted-dt);e.attackAt -= dt; e.wet = Math.max(0, e.wet - dt);
       if (e.poisonUntil > 0) { e.poisonUntil -= dt; e.poisonAt -= dt; if (e.poisonAt <= 0) { e.poisonAt = 1000; this.hurt(e, 5*e.poisonPower, 'poison'); if (token !== this.generation) return; if (!this.enemies.includes(e)) continue; } }
       const d = Phaser.Math.Distance.Between(e.x, e.y, this.player.x, this.player.y);
-      const spec = enemyAttacks[e.boss ? this.caveBoss?'serpent':'guardian' : e.kind];
+      const baseSpec=enemyAttacks[e.boss ? this.caveBoss?'serpent':'guardian' : e.kind];
+      const spec={...baseSpec,range:baseSpec.ranged?baseSpec.range:Math.max(baseSpec.range,contactReach(e.radius)+8)};
       const visible = d<500&&this.navigation().clearLine(e,this.player);
-      const enemyMoving = e.rooted<=0 && visible && !e.boss && !e.action && d < spec.range + 35 && d > (spec.ranged ? spec.range * .8 : 40);
+      const enemyMoving = e.rooted<=0 && visible && !e.boss && !e.action && d < spec.range + 35 && d > (spec.ranged ? spec.range * .8 : Math.max(26,contactReach(e.radius)-8));
       if (enemyMoving) { const a = Phaser.Math.Angle.Between(e.x, e.y, this.player.x, this.player.y); const next={x:e.x+Math.cos(a)*dt*.023,y:e.y+Math.sin(a)*dt*.023};if(this.navigation().clearLine(e,next)){e.x=next.x;e.y=next.y;} }
       if (e.rooted<=0 && visible && d <= spec.range && e.attackAt <= 0 && !e.action && !(e.boss && this.windup > 0)) {
         const length = Math.max(1, d);
@@ -551,7 +546,7 @@ class Meadow extends WorldScene {
       this.updateEnemyAttack(e,spec,dt,enemyMoving);
       e.shadow.setPosition(e.x, e.y + 1).setDepth(e.y / 100 - .05);
       e.sprite.setDepth(e.y / 100); if (e.hitUntil > 0) e.sprite.setTint(0xffddcf); else if(e.rooted>0)e.sprite.setTint(0xd3c3eb);else if (e.wet > 0) e.sprite.setTint(0x9bdde3); else e.sprite.clearTint();
-      const width = e.boss ? 52 : 26, offset = e.boss ? 76 : 46;
+      const width=e.barWidth,offset=e.barOffset;
       e.bar.clear().fillStyle(0x15251a).fillRect(e.x - width / 2, e.y - offset, width, 3).fillStyle(e.poisonUntil > 0 ? 0xc597d2 : e.boss ? 0xd8ad72 : 0xacc67d).fillRect(e.x - width / 2, e.y - offset, width * Math.max(0, e.hp / e.max), 3);
     }
     this.updateStrikes(dt);
@@ -603,8 +598,8 @@ window.addEventListener('pagehide',()=>{if(awayExpedition)creditBackground();sav
 
 el('area-cave').onclick=()=>{leaveVillage();scene.setArea('cave');};
 el('area-forest').onclick=()=>{leaveVillage();scene.setArea('forest');};
-document.querySelectorAll<HTMLButtonElement>('[data-sector]').forEach(b=>b.onclick=()=>{scene.travelTo(Number(b.dataset.sector),'cave');togglePanel(null);});
-document.querySelectorAll<HTMLButtonElement>('[data-forest-sector]').forEach(b=>b.onclick=()=>{scene.travelTo(Number(b.dataset.forestSector),'forest');togglePanel(null);});
+bindMapTabs();
+document.querySelectorAll<HTMLButtonElement>('[data-map-destination]').forEach(b=>b.onclick=()=>{scene.travelTo(Number(b.dataset.mapDestination),b.dataset.mapArea as 'cave'|'forest');togglePanel(null);});
 (el('expedition') as HTMLInputElement).onchange=e=>{scene.exploring=(e.target as HTMLInputElement).checked;state.autoExplore=scene.exploring;save();};
 
 el('analyze-spring').onclick=()=>{

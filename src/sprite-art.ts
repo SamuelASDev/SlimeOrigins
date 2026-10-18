@@ -1,3 +1,4 @@
+import {actorSize} from './actor-sizes';
 import Phaser from 'phaser';
 import { spriteFiles } from './asset-paths';
 
@@ -23,11 +24,11 @@ export function registerSpriteAnimations(scene: Phaser.Scene) {
   }
 }
 
-export function makeActor(scene: Phaser.Scene, x: number, y: number, key: string, width: number) {
+export function makeActor(scene: Phaser.Scene, x: number, y: number, key: string) {
   const firstFrame = key === 'slime' ? 'idle-0' : '0';
   const sprite = scene.add.sprite(x, y, key, firstFrame).setOrigin(.5, 1);
   // Calibrate visible body size using the neutral pose, retaining one scale for all frames.
-  sprite.setScale(width / scene.textures.getFrame(key, firstFrame).cutWidth);
+  sprite.setScale(actorSize(key).width / scene.textures.getFrame(key, firstFrame).cutWidth);
   sprite.play(`${key}-idle`);
   return sprite;
 }

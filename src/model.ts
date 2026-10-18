@@ -88,7 +88,7 @@ export function migrate(raw: unknown): State {
       while(used.has(copy.uid))copy.uid++;
       used.add(copy.uid);result.nextItem=Math.max(result.nextItem,copy.uid+1);
     }
-  } else { for(const id of skillIds) if(result.unlocked[id]) addItem(result,id); }
+  } else { for(const id of skillIds) if(result.unlocked[id]) addItem(result,id,1,'legacy'); }
   if(r.version===4) {
     if(Array.isArray(r.skillSlots))for(let slot=0;slot<SLOT_LIMIT;slot++){const uid=r.skillSlots[slot];if(typeof uid==='number')equipSkillItem(result,uid,slot);}
     const gear=record(r.equipment),slots=record(gear.slots);
@@ -139,13 +139,17 @@ export function toggleEquip(state: State, id: SkillId): boolean {
  return item?equipSkillItem(state,item.uid,state.skillSlots.indexOf(null)):false;
 }
 export function fusionError(state: State, id: FusionId): string | null {
-  const [a,b]=recipes[id].parents;
-  return state.inventory.some(i=>i.skill===a)&&state.inventory.some(i=>i.skill===b)?null:'Faltam cópias para sintetizar.';
+ const [a,b]=recipes[id].parents;
+ const free=state.inventory.filter(i=>!i.favorite&&!state.skillSlots.includes(i.uid));
+ const first=free.find(i=>i.skill===a),second=free.find(i=>i.skill===b&&i.uid!==first?.uid);
+ if(!first||!second)return 'Faltam duas cópias livres e sem proteção para sintetizar.';
+ const preview=previewMix(state,first.uid,second.uid);return preview.ok?null:preview.message;
 }
 export function fuse(state: State,id:FusionId):boolean {
-  const [a,b]=recipes[id].parents;
-  const first=state.inventory.find(i=>i.skill===a),second=state.inventory.find(i=>i.skill===b&&i.uid!==first?.uid);
-  return first&&second?mix(state,first.uid,second.uid).ok:false;
+ const [a,b]=recipes[id].parents;
+ const free=state.inventory.filter(i=>!i.favorite&&!state.skillSlots.includes(i.uid));
+ const first=free.find(i=>i.skill===a),second=free.find(i=>i.skill===b&&i.uid!==first?.uid);
+ return first&&second?mix(state,first.uid,second.uid).ok:false;
 }
 export const drops: Record<Kind, SkillId[]> = Object.fromEntries(kinds.map(k=>[k,[k]])) as Record<Kind, SkillId[]>;
 drops.spider=['spider','steel'];drops.bat=['bat','ultrasound'];drops.serpent=['serpent','heat'];drops.armorsaurus=['armorsaurus','strength'];

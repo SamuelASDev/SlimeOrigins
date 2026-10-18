@@ -9,7 +9,7 @@ export type Building=typeof buildingIds[number];
 export type Village={materials:Record<Material,number>;buildings:Record<Building,number>;artisan:boolean;founded:boolean;weapon:number;armor:number;tonicUntil:number};
 export const freshVillage=():Village=>({materials:{timber:0,ore:0,silk:0,herbs:0},buildings:{workshop:0,lab:0,alchemy:0},artisan:false,founded:false,weapon:0,armor:0,tonicUntil:0});
 export const buildings:Record<Building,{name:string;icon:string;benefit:string}>={
- workshop:{name:'Oficina',icon:'⚒',benefit:'Cada nível: +4% de defesa. Com o artesão, fabrica e aprimora núcleo ofensivo e revestimento.'},
+ workshop:{name:'Oficina',icon:'⚒',benefit:'Cada nível: +4% de defesa. Com Kaijin, fabrica arma, armadura e talismã para equipar no inventário.'},
  lab:{name:'Laboratório',icon:'◈',benefit:'Cada nível: +2 pontos percentuais na chance de absorção e +5% de velocidade de ataque. Sínteses continuam disponíveis.'},
  alchemy:{name:'Alquimia',icon:'✚',benefit:'Cada nível: +0,75 vida/s. Permite preparar um tônico de vitalidade com duração de 10 minutos.'},
 };

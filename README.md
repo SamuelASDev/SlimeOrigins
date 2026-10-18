@@ -60,3 +60,7 @@ Planejamento completo em [documentação/planejamento.md](documentação/planeja
 Em **Opções**, exporte e importe o save JSON e ative o áudio. O objetivo acima da barra de caça orienta a progressão; clique nele para abrir a próxima ação.
 
 A vila agora utiliza cenário e folhas animadas geradas no mesmo estilo anime pixel art dos monstros: veja [arte da vila e moradores](documentação/vila-sprites-anime-v2.md).
+
+## Inventário e moeda do jogo
+
+**I** abre o inventário e o mercador; **H** abre as habilidades como itens alocados em três slots. **F** oferece prévia de fusão e busca de pares. Kaijin fabrica cópias para equipar na mochila. Cada abate rende duas moedas; habilidades e equipamentos livres podem ser vendidos ao mercador após fundar a vila. Favoritos e itens equipados ficam protegidos. Saves anteriores migram automaticamente para a versão 4. Veja [inventário e economia](documentação/inventario-e-economia.md).

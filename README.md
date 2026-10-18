@@ -63,6 +63,8 @@ O atlas separa caverna e floresta em abas com informações padronizadas. Criatu
 
 A síntese apresenta somente combinações possíveis com cópias livres da mochila. Jura recebeu recortes independentes, margens e organização da vegetação: [revisão da síntese e dos sprites](documentação/sintese-e-jura-revisao.md).
 
+A caverna recebeu escala e composição revisadas: pilares alinhados às colisões, hipokute nas nascentes, minérios agrupados, teias laterais, caminhos marcados e Veldora sem distorção. Veja [harmonia da caverna](documentação/caverna-harmonia-v4.md).
+
 Em **Opções**, exporte e importe o save JSON e ative o áudio. O objetivo acima da barra de caça orienta a progressão; clique nele para abrir a próxima ação.
 
 A vila agora utiliza cenário e folhas animadas geradas no mesmo estilo anime pixel art dos monstros: veja [arte da vila e moradores](documentação/vila-sprites-anime-v2.md).

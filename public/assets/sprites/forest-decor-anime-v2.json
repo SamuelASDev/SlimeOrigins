@@ -1,0 +1,133 @@
+{
+  "frames": {
+    "oak": {
+      "frame": {
+        "x": 19,
+        "y": 16,
+        "w": 493,
+        "h": 496
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 25,
+        "y": 4,
+        "w": 493,
+        "h": 496
+      },
+      "sourceSize": {
+        "w": 568,
+        "h": 504
+      }
+    },
+    "willow": {
+      "frame": {
+        "x": 512,
+        "y": 18,
+        "w": 512,
+        "h": 494
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 6,
+        "w": 512,
+        "h": 494
+      },
+      "sourceSize": {
+        "w": 568,
+        "h": 504
+      }
+    },
+    "iron": {
+      "frame": {
+        "x": 1086,
+        "y": 128,
+        "w": 418,
+        "h": 384
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 72,
+        "y": 116,
+        "w": 418,
+        "h": 384
+      },
+      "sourceSize": {
+        "w": 568,
+        "h": 504
+      }
+    },
+    "crystal": {
+      "frame": {
+        "x": 47,
+        "y": 512,
+        "w": 453,
+        "h": 481
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 19,
+        "w": 453,
+        "h": 481
+      },
+      "sourceSize": {
+        "w": 568,
+        "h": 504
+      }
+    },
+    "herbs": {
+      "frame": {
+        "x": 552,
+        "y": 512,
+        "w": 430,
+        "h": 482
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 72,
+        "y": 18,
+        "w": 430,
+        "h": 482
+      },
+      "sourceSize": {
+        "w": 568,
+        "h": 504
+      }
+    },
+    "log": {
+      "frame": {
+        "x": 1026,
+        "y": 512,
+        "w": 487,
+        "h": 470
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 31,
+        "y": 30,
+        "w": 487,
+        "h": 470
+      },
+      "sourceSize": {
+        "w": 568,
+        "h": 504
+      }
+    }
+  },
+  "meta": {
+    "image": "forest-decor-anime-v2.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

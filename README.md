@@ -63,6 +63,8 @@ A vila agora utiliza cenário e folhas animadas geradas no mesmo estilo anime pi
 
 ## Inventário e moeda do jogo
 
+Kaijin agora fabrica armas, armaduras e amuletos simples com moedas e versões melhores com minérios e outros recursos. O inventário inclui nove recursos com ícones próprios, fontes de coleta e venda na vila. A caça também recebeu correções de foco, retomada e rotas bloqueadas: [forja, recursos e continuidade](documentação/forja-recursos-continuidade.md).
+
 **I** abre o inventário; **H** abre as habilidades como itens alocados em três slots. **F** oferece prévia de fusão e busca de pares. Kaijin fabrica cópias para equipar na mochila. Cada abate rende duas moedas; habilidades e equipamentos livres podem ser vendidos ao visitar Myourmiles na vila após fundá-la. Favoritos e itens equipados ficam protegidos. Saves anteriores migram automaticamente para a versão 4. Veja [inventário e economia](documentação/inventario-e-economia.md).
 
 Ícones anime para todas as habilidades e equipamentos, mercador Myourmiles clicável na vila com caravana a cada 15 minutos e menus independentes das atualizações de combate: [detalhes e testes](documentação/icones-caravana-menus.md). Novas cópias aparecem no aviso **Mostrar novos itens**, sem interromper a rolagem.

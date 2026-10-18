@@ -2,7 +2,7 @@
 
 ## Jogar
 
-- **I · Inventário**: arma, armadura e acessório no personagem, mochila de equipamentos e mercador.
+- **I · Inventário**: arma, armadura e acessório no personagem, mochila de equipamentos. O mercador Myourmiles fica na vila.
 - **H · Habilidades**: cada cópia ocupa uma célula da mochila. Clique num slot, selecione uma cópia e use **Alocar**; também é possível arrastar a cópia para o slot. Três slots e seis pontos de magia. Não é possível alocar duas cópias da mesma habilidade ao mesmo tempo.
 - **F · Fusão**: prévia do resultado e dos ingredientes, confirmação explícita e busca de pares para evolução. Apenas cópias livres e sem favorito podem ser consumidas. Duas iguais e do mesmo nível evoluem até nove; tipos diferentes seguem o livro de receitas e herdam o menor nível dos ingredientes.
 - **★ Favorito**: protege a cópia contra venda e fusão. Não impede seu uso no personagem.
@@ -13,12 +13,12 @@ Kaijin fabrica cópias na mochila. O nível da oficina determina o nível do equ
 
 ## Moeda do jogo
 
-Cada abate rende duas moedas, inclusive na expedição offline. Após fundar a vila, o mercador permite:
+Cada abate rende duas moedas, inclusive na expedição offline. Após fundar a vila, visite Myourmiles para negociar. Sua caravana renova as ofertas a cada 15 minutos e permite:
 
 - Vender uma cópia de habilidade por `8 × nível²` moedas.
 - Vender um equipamento por `20 × nível²` moedas.
-- Comprar Carapaça, Instinto caçador ou Regeneração de nível 1 por 80 moedas cada.
-- Comprar um pacote de cinco materiais por 30 moedas.
+- Comprar habilidades de nível 1 por 80 moedas, em estoque rotativo. Habilidades de nível maior e equipamentos também aparecem em ofertas limitadas.
+- Comprar um pacote de cinco materiais por 30 moedas, limitado por caravana.
 
 Vender exige selecionar uma cópia e confirmar o preço. Equipados e favoritos são protegidos. Uma venda não pode consumir a mesma instância duas vezes. O registro de descoberta permanece após vender a última cópia, mas a habilidade só pode ser equipada enquanto existir um item disponível. Não há venda em lote nesta entrega.
 
@@ -45,3 +45,5 @@ Para criar dados de demonstração: `node --experimental-strip-types scripts/cre
 Verificado na origem `localhost:5173`, com dados de demonstração separados do save real em `127.0.0.1:5173`: restauração por texto e migração de componentes, slots de equipamento, alocação da cópia de nível 1 enquanto outra de nível 5 permanece na mochila, favorito persistido e excluído da fusão/venda, prévia e execução de Corpo adaptativo, venda com confirmação e acréscimo exato de oito moedas, compra de habilidade e materiais, fabricação de talismã sem equipar automaticamente e equipamento preservado após recarregar. Busca e filtro de favoritos também foram conferidos. Nenhum erro de console foi encontrado durante o fluxo. O arraste foi implementado, mas não foi exercitado nessa verificação; a alocação por clique foi testada.
 
 A importação por arquivo ficou bloqueada pela configuração da extensão do Edge, então a verificação usou a alternativa por texto. As confirmações de restauração agora aparecem dentro do jogo, evitando caixas nativas que bloquearam uma aba de teste. Captura em [inventario-equipamentos-v4.jpg](imagens/inventario-equipamentos-v4.jpg).
+
+A revisão atual dos ícones, das ofertas e da estabilidade dos menus está em [ícones, caravana e menus](icones-caravana-menus.md).

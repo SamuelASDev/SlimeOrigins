@@ -397,7 +397,7 @@ class Meadow extends WorldScene {
     if(this.destination!==null)put('target','Explorando → setor '+(this.destination+1));
     const boss = this.enemies.find(e => e.boss);
     if (boss) { put('boss-hp-text', `${Math.ceil(boss.hp)} / ${boss.max}`); el('boss-hp-bar').style.width = `${Math.max(0, boss.hp / boss.max * 100)}%`; put('boss-action', this.windup > 0 ? this.caveBoss?'⚠ HÁLITO CORROSIVO · recue!':'⚠ IMPACTO SÍSMICO · preparando ataque!' : this.caveBoss?'ESCAMAS ANTIGAS · −60% de dano físico':'CARAPAÇA PÉTREA · −60% de dano físico'); }
-    if(inVillage){put('location-name','Acampamento dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';}
+    if(inVillage){put('location-name','Tempest ? Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';}
 
   }
   update(_time: number, delta: number) {
@@ -487,7 +487,7 @@ function enterVillage(){
  if(inVillage){togglePanel(null);villageMap.centerVillage();return;}
  togglePanel(null);inVillage=true;document.body.classList.add('village-mode');
  scene.scene.sleep();if(scene.scene.isSleeping('VillageMap'))scene.scene.wake('VillageMap');else scene.scene.launch('VillageMap');
- scene.renderHud();put('location-name','Acampamento dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');
+ scene.renderHud();put('location-name','Tempest ? Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');
  document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';
  el('game').setAttribute('aria-label','Mapa da vila: arraste com o mouse para explorar e clique nas construções.');
 }

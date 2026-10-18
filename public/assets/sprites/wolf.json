@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 90,
+        "y": 136,
+        "w": 481,
+        "h": 431
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 9,
+        "w": 481,
+        "h": 431
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 444
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 691,
+        "y": 149,
+        "w": 484,
+        "h": 420
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 20,
+        "w": 484,
+        "h": 420
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 444
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 74,
+        "y": 746,
+        "w": 498,
+        "h": 424
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 11,
+        "y": 16,
+        "w": 498,
+        "h": 424
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 444
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 695,
+        "y": 734,
+        "w": 512,
+        "h": 436
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 4,
+        "w": 512,
+        "h": 436
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 444
+      }
+    }
+  },
+  "meta": {
+    "image": "wolf.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

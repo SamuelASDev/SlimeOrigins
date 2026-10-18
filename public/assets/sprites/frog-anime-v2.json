@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 40,
+        "y": 161,
+        "w": 556,
+        "h": 403
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 20,
+        "y": 66,
+        "w": 556,
+        "h": 403
+      },
+      "sourceSize": {
+        "w": 628,
+        "h": 473
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 659,
+        "y": 171,
+        "w": 549,
+        "h": 395
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 19,
+        "y": 74,
+        "w": 549,
+        "h": 395
+      },
+      "sourceSize": {
+        "w": 628,
+        "h": 473
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 35,
+        "y": 704,
+        "w": 569,
+        "h": 465
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 4,
+        "w": 569,
+        "h": 465
+      },
+      "sourceSize": {
+        "w": 628,
+        "h": 473
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 637,
+        "y": 748,
+        "w": 604,
+        "h": 409
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 60,
+        "w": 604,
+        "h": 409
+      },
+      "sourceSize": {
+        "w": 628,
+        "h": 473
+      }
+    }
+  },
+  "meta": {
+    "image": "frog-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

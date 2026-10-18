@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 107,
+        "y": 202,
+        "w": 448,
+        "h": 363
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 4,
+        "w": 448,
+        "h": 363
+      },
+      "sourceSize": {
+        "w": 576,
+        "h": 371
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 708,
+        "y": 211,
+        "w": 468,
+        "h": 360
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 54,
+        "y": 7,
+        "w": 468,
+        "h": 360
+      },
+      "sourceSize": {
+        "w": 576,
+        "h": 371
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 79,
+        "y": 813,
+        "w": 475,
+        "h": 346
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 50,
+        "y": 21,
+        "w": 475,
+        "h": 346
+      },
+      "sourceSize": {
+        "w": 576,
+        "h": 371
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 654,
+        "y": 782,
+        "w": 568,
+        "h": 357
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 10,
+        "w": 568,
+        "h": 357
+      },
+      "sourceSize": {
+        "w": 576,
+        "h": 371
+      }
+    }
+  },
+  "meta": {
+    "image": "frog.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 29,
+        "y": 14,
+        "w": 709,
+        "h": 474
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 25,
+        "y": 19,
+        "w": 709,
+        "h": 474
+      },
+      "sourceSize": {
+        "w": 790,
+        "h": 497
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 783,
+        "y": 22,
+        "w": 723,
+        "h": 479
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 14,
+        "w": 723,
+        "h": 479
+      },
+      "sourceSize": {
+        "w": 790,
+        "h": 497
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 33,
+        "y": 518,
+        "w": 713,
+        "h": 489
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 45,
+        "y": 4,
+        "w": 713,
+        "h": 489
+      },
+      "sourceSize": {
+        "w": 790,
+        "h": 497
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 784,
+        "y": 560,
+        "w": 721,
+        "h": 413
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 17,
+        "y": 80,
+        "w": 721,
+        "h": 413
+      },
+      "sourceSize": {
+        "w": 790,
+        "h": 497
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-armorsaurus.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

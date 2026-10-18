@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 40,
+        "y": 216,
+        "w": 569,
+        "h": 295
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 84,
+        "w": 569,
+        "h": 295
+      },
+      "sourceSize": {
+        "w": 577,
+        "h": 383
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 689,
+        "y": 183,
+        "w": 511,
+        "h": 375
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 33,
+        "y": 4,
+        "w": 511,
+        "h": 375
+      },
+      "sourceSize": {
+        "w": 577,
+        "h": 383
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 77,
+        "y": 793,
+        "w": 532,
+        "h": 302
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 22,
+        "y": 77,
+        "w": 532,
+        "h": 302
+      },
+      "sourceSize": {
+        "w": 577,
+        "h": 383
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 687,
+        "y": 788,
+        "w": 509,
+        "h": 335
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 34,
+        "y": 44,
+        "w": 509,
+        "h": 335
+      },
+      "sourceSize": {
+        "w": 577,
+        "h": 383
+      }
+    }
+  },
+  "meta": {
+    "image": "bat.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

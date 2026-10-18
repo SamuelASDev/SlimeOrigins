@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 48,
+        "y": 160,
+        "w": 519,
+        "h": 422
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 54,
+        "y": 32,
+        "w": 519,
+        "h": 422
+      },
+      "sourceSize": {
+        "w": 626,
+        "h": 458
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 674,
+        "y": 155,
+        "w": 537,
+        "h": 430
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 24,
+        "w": 537,
+        "h": 430
+      },
+      "sourceSize": {
+        "w": 626,
+        "h": 458
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 43,
+        "y": 709,
+        "w": 529,
+        "h": 450
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 66,
+        "y": 4,
+        "w": 529,
+        "h": 450
+      },
+      "sourceSize": {
+        "w": 626,
+        "h": 458
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 671,
+        "y": 743,
+        "w": 564,
+        "h": 416
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 58,
+        "y": 38,
+        "w": 564,
+        "h": 416
+      },
+      "sourceSize": {
+        "w": 626,
+        "h": 458
+      }
+    }
+  },
+  "meta": {
+    "image": "beetle-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

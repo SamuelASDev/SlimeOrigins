@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 51,
+        "y": 81,
+        "w": 532,
+        "h": 509
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 72,
+        "y": 4,
+        "w": 532,
+        "h": 509
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 517
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 633,
+        "y": 105,
+        "w": 612,
+        "h": 497
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 40,
+        "y": 16,
+        "w": 612,
+        "h": 497
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 517
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 43,
+        "y": 682,
+        "w": 584,
+        "h": 472
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 79,
+        "y": 41,
+        "w": 584,
+        "h": 472
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 517
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 627,
+        "y": 730,
+        "w": 618,
+        "h": 450
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 84,
+        "y": 63,
+        "w": 618,
+        "h": 450
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 517
+      }
+    }
+  },
+  "meta": {
+    "image": "snake-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

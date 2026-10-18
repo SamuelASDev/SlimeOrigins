@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 30,
+        "y": 114,
+        "w": 579,
+        "h": 466
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 14,
+        "y": 6,
+        "w": 579,
+        "h": 466
+      },
+      "sourceSize": {
+        "w": 607,
+        "h": 476
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 659,
+        "y": 116,
+        "w": 578,
+        "h": 448
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 14,
+        "y": 24,
+        "w": 578,
+        "h": 448
+      },
+      "sourceSize": {
+        "w": 607,
+        "h": 476
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 28,
+        "y": 737,
+        "w": 599,
+        "h": 454
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 18,
+        "w": 599,
+        "h": 454
+      },
+      "sourceSize": {
+        "w": 607,
+        "h": 476
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 646,
+        "y": 734,
+        "w": 597,
+        "h": 468
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 5,
+        "y": 4,
+        "w": 597,
+        "h": 468
+      },
+      "sourceSize": {
+        "w": 607,
+        "h": 476
+      }
+    }
+  },
+  "meta": {
+    "image": "guardian.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 52,
+        "y": 93,
+        "w": 555,
+        "h": 479
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 170,
+        "y": 12,
+        "w": 555,
+        "h": 479
+      },
+      "sourceSize": {
+        "w": 804,
+        "h": 495
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 673,
+        "y": 101,
+        "w": 550,
+        "h": 479
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 167,
+        "y": 12,
+        "w": 550,
+        "h": 479
+      },
+      "sourceSize": {
+        "w": 804,
+        "h": 495
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 26,
+        "y": 660,
+        "w": 601,
+        "h": 487
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 152,
+        "y": 4,
+        "w": 601,
+        "h": 487
+      },
+      "sourceSize": {
+        "w": 804,
+        "h": 495
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 627,
+        "y": 714,
+        "w": 612,
+        "h": 421
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 188,
+        "y": 70,
+        "w": 612,
+        "h": 421
+      },
+      "sourceSize": {
+        "w": 804,
+        "h": 495
+      }
+    }
+  },
+  "meta": {
+    "image": "wisp-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

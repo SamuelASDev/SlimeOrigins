@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 52,
+        "y": 46,
+        "w": 678,
+        "h": 466
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 111,
+        "y": 6,
+        "w": 678,
+        "h": 466
+      },
+      "sourceSize": {
+        "w": 852,
+        "h": 476
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 807,
+        "y": 46,
+        "w": 697,
+        "h": 443
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 123,
+        "y": 29,
+        "w": 697,
+        "h": 443
+      },
+      "sourceSize": {
+        "w": 852,
+        "h": 476
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 42,
+        "y": 512,
+        "w": 660,
+        "h": 468
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 122,
+        "y": 4,
+        "w": 660,
+        "h": 468
+      },
+      "sourceSize": {
+        "w": 852,
+        "h": 476
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 792,
+        "y": 577,
+        "w": 722,
+        "h": 394
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 126,
+        "y": 78,
+        "w": 722,
+        "h": 394
+      },
+      "sourceSize": {
+        "w": 852,
+        "h": 476
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-spider-v2.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

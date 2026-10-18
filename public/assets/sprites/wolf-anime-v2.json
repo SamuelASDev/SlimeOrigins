@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 16,
+        "y": 80,
+        "w": 588,
+        "h": 534
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 37,
+        "y": 4,
+        "w": 588,
+        "h": 534
+      },
+      "sourceSize": {
+        "w": 688,
+        "h": 542
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 635,
+        "y": 116,
+        "w": 594,
+        "h": 485
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 38,
+        "y": 53,
+        "w": 594,
+        "h": 485
+      },
+      "sourceSize": {
+        "w": 688,
+        "h": 542
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 20,
+        "y": 685,
+        "w": 607,
+        "h": 490
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 77,
+        "y": 48,
+        "w": 607,
+        "h": 490
+      },
+      "sourceSize": {
+        "w": 688,
+        "h": 542
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 627,
+        "y": 664,
+        "w": 612,
+        "h": 488
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 53,
+        "y": 50,
+        "w": 612,
+        "h": 488
+      },
+      "sourceSize": {
+        "w": 688,
+        "h": 542
+      }
+    }
+  },
+  "meta": {
+    "image": "wolf-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

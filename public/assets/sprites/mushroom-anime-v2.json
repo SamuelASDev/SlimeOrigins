@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 55,
+        "y": 107,
+        "w": 498,
+        "h": 500
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 72,
+        "y": 10,
+        "w": 498,
+        "h": 500
+      },
+      "sourceSize": {
+        "w": 644,
+        "h": 514
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 707,
+        "y": 109,
+        "w": 505,
+        "h": 506
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 76,
+        "y": 4,
+        "w": 505,
+        "h": 506
+      },
+      "sourceSize": {
+        "w": 644,
+        "h": 514
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 64,
+        "y": 745,
+        "w": 475,
+        "h": 428
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 71,
+        "y": 82,
+        "w": 475,
+        "h": 428
+      },
+      "sourceSize": {
+        "w": 644,
+        "h": 514
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 647,
+        "y": 719,
+        "w": 599,
+        "h": 448
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 41,
+        "y": 62,
+        "w": 599,
+        "h": 448
+      },
+      "sourceSize": {
+        "w": 644,
+        "h": 514
+      }
+    }
+  },
+  "meta": {
+    "image": "mushroom-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

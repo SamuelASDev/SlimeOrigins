@@ -1,0 +1,5 @@
+{
+  "tool": "image_gen.imagegen",
+  "prompt": "Single game sprite of Veldora the Storm Dragon in his original dragon form from That Time I Got Reincarnated as a Slime: colossal black charcoal dragon, muscular torso, long neck, two large swept horns, golden eyes, huge folded dark wings, silver belly plates, tail curled around his feet. Friendly proud seated pose, no attack. Three-quarter top-down JRPG anime pixel art, crisp pixel clusters and dark outline, limited blue-grey palette, readable at 180 pixels tall. Entire body and wings inside frame, generous padding. Isolated on transparent background. No text, no ground, no spell circle, no glow background.",
+  "file": "public/assets/sprites/veldora-cave.png"
+}

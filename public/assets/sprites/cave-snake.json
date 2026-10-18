@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 59,
+        "y": 28,
+        "w": 709,
+        "h": 484
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 87,
+        "y": 4,
+        "w": 709,
+        "h": 484
+      },
+      "sourceSize": {
+        "w": 864,
+        "h": 492
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 768,
+        "y": 91,
+        "w": 742,
+        "h": 380
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 58,
+        "y": 108,
+        "w": 742,
+        "h": 380
+      },
+      "sourceSize": {
+        "w": 864,
+        "h": 492
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 26,
+        "y": 512,
+        "w": 742,
+        "h": 475
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 69,
+        "y": 13,
+        "w": 742,
+        "h": 475
+      },
+      "sourceSize": {
+        "w": 864,
+        "h": 492
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 768,
+        "y": 566,
+        "w": 745,
+        "h": 397
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 115,
+        "y": 91,
+        "w": 745,
+        "h": 397
+      },
+      "sourceSize": {
+        "w": 864,
+        "h": 492
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-snake.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

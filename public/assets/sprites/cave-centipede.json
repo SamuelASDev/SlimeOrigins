@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 18,
+        "y": 18,
+        "w": 695,
+        "h": 457
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 94,
+        "y": 30,
+        "w": 695,
+        "h": 457
+      },
+      "sourceSize": {
+        "w": 828,
+        "h": 491
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 783,
+        "y": 17,
+        "w": 718,
+        "h": 459
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 83,
+        "y": 28,
+        "w": 718,
+        "h": 459
+      },
+      "sourceSize": {
+        "w": 828,
+        "h": 491
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 8,
+        "y": 517,
+        "w": 760,
+        "h": 483
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 52,
+        "y": 4,
+        "w": 760,
+        "h": 483
+      },
+      "sourceSize": {
+        "w": 828,
+        "h": 491
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 768,
+        "y": 560,
+        "w": 760,
+        "h": 394
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 64,
+        "y": 93,
+        "w": 760,
+        "h": 394
+      },
+      "sourceSize": {
+        "w": 828,
+        "h": 491
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-centipede.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 21,
+        "y": 71,
+        "w": 595,
+        "h": 506
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 33,
+        "w": 595,
+        "h": 506
+      },
+      "sourceSize": {
+        "w": 662,
+        "h": 543
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 686,
+        "y": 71,
+        "w": 556,
+        "h": 535
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 36,
+        "y": 4,
+        "w": 556,
+        "h": 535
+      },
+      "sourceSize": {
+        "w": 662,
+        "h": 543
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 47,
+        "y": 698,
+        "w": 580,
+        "h": 433
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 49,
+        "y": 106,
+        "w": 580,
+        "h": 433
+      },
+      "sourceSize": {
+        "w": 662,
+        "h": 543
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 627,
+        "y": 686,
+        "w": 609,
+        "h": 470
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 42,
+        "y": 69,
+        "w": 609,
+        "h": 470
+      },
+      "sourceSize": {
+        "w": 662,
+        "h": 543
+      }
+    }
+  },
+  "meta": {
+    "image": "bat-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 136,
+        "y": 164,
+        "w": 369,
+        "h": 364
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 79,
+        "y": 18,
+        "w": 369,
+        "h": 364
+      },
+      "sourceSize": {
+        "w": 527,
+        "h": 386
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 756,
+        "y": 164,
+        "w": 376,
+        "h": 378
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 75,
+        "y": 4,
+        "w": 376,
+        "h": 378
+      },
+      "sourceSize": {
+        "w": 527,
+        "h": 386
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 138,
+        "y": 788,
+        "w": 376,
+        "h": 373
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 75,
+        "y": 9,
+        "w": 376,
+        "h": 373
+      },
+      "sourceSize": {
+        "w": 527,
+        "h": 386
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 712,
+        "y": 787,
+        "w": 519,
+        "h": 352
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 30,
+        "w": 519,
+        "h": 352
+      },
+      "sourceSize": {
+        "w": 527,
+        "h": 386
+      }
+    }
+  },
+  "meta": {
+    "image": "mushroom.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 95,
+        "y": 141,
+        "w": 489,
+        "h": 405
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 25,
+        "y": 27,
+        "w": 489,
+        "h": 405
+      },
+      "sourceSize": {
+        "w": 539,
+        "h": 436
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 695,
+        "y": 131,
+        "w": 510,
+        "h": 422
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 14,
+        "y": 10,
+        "w": 510,
+        "h": 422
+      },
+      "sourceSize": {
+        "w": 539,
+        "h": 436
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 99,
+        "y": 697,
+        "w": 520,
+        "h": 428
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 9,
+        "y": 4,
+        "w": 520,
+        "h": 428
+      },
+      "sourceSize": {
+        "w": 539,
+        "h": 436
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 698,
+        "y": 730,
+        "w": 531,
+        "h": 376
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 56,
+        "w": 531,
+        "h": 376
+      },
+      "sourceSize": {
+        "w": 539,
+        "h": 436
+      }
+    }
+  },
+  "meta": {
+    "image": "moth.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

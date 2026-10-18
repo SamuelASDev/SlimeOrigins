@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 111,
+        "y": 190,
+        "w": 406,
+        "h": 348
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 78,
+        "y": 37,
+        "w": 406,
+        "h": 348
+      },
+      "sourceSize": {
+        "w": 563,
+        "h": 389
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 671,
+        "y": 178,
+        "w": 474,
+        "h": 367
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 44,
+        "y": 18,
+        "w": 474,
+        "h": 367
+      },
+      "sourceSize": {
+        "w": 563,
+        "h": 389
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 106,
+        "y": 804,
+        "w": 470,
+        "h": 328
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 46,
+        "y": 57,
+        "w": 470,
+        "h": 328
+      },
+      "sourceSize": {
+        "w": 563,
+        "h": 389
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 656,
+        "y": 760,
+        "w": 555,
+        "h": 381
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 4,
+        "w": 555,
+        "h": 381
+      },
+      "sourceSize": {
+        "w": 563,
+        "h": 389
+      }
+    }
+  },
+  "meta": {
+    "image": "snake.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

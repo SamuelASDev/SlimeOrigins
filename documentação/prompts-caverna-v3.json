@@ -1,0 +1,17 @@
+{
+  "tool": "image_gen.imagegen",
+  "assets": {
+    "cave-spider-v2": {
+      "file": "public/assets/sprites/cave-spider-v2.png",
+      "prompt": "Game-ready JRPG anime pixel art spritesheet. A Black Spider monster from Tensura early anime: black charcoal and dark violet armored spider, eight long jointed legs, crimson eyes, ivory mandibles. Strict 2x2 equal grid FOUR poses of same creature at same scale: top left idle, top right walk, bottom left windup, bottom right strike. Three-quarter top down view facing right. Full body inside each cell with generous padding, no clipped legs or tail, crisp visible pixel clusters, dark contour, detailed cel shading readable at 64 game pixels. Transparent background, no scenery, text, frame borders, glow backdrop or particles."
+    },
+    "cave-serpent-boss": {
+      "file": "public/assets/sprites/cave-serpent-boss.png",
+      "prompt": "Game-ready JRPG anime pixel art spritesheet. An ancient gigantic Tempest Black Serpent boss inspired by Tensura cave: heavy black navy scales, ivory bony crest, purple underside, golden eyes, coiled thick body, intimidating anime reptile. Strict 2x2 equal grid FOUR poses of same creature at same scale: top left idle, top right walk, bottom left windup, bottom right strike. Three-quarter top down view facing right. Full body inside each cell with generous padding, no clipped legs or tail, crisp visible pixel clusters, dark contour, detailed cel shading readable at 64 game pixels. Transparent background, no scenery, text, frame borders, glow backdrop or particles."
+    },
+    "cave-decor-v2": {
+      "file": "public/assets/sprites/cave-decor-v2.png",
+      "prompt": "Polished anime JRPG pixel art game assets, crisp hand-placed-looking pixel clusters, top down three-quarter view, rich cel shaded detail and dark outlines. ENVIRONMENT PROP SHEET with four separate objects in strict 2x2 equal grid: top left blue luminous magic crystal cluster growing from rugged dark rock; top right tall layered limestone stalagmite formation with moss; bottom left lush clump of Hipokute healing herbs with tiny pale cyan flowers on mossy rocks; bottom right large ragged spider web stretched between dark cave rocks with small silk cocoons. No creatures. Each object isolated with generous transparent margins. Transparent background, no text or labels or ground plane. All four props wholly inside their own quadrant, never touching edges."
+    }
+  }
+}

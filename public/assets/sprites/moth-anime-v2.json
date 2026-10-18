@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 68,
+        "y": 99,
+        "w": 511,
+        "h": 483
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 83,
+        "y": 73,
+        "w": 511,
+        "h": 483
+      },
+      "sourceSize": {
+        "w": 656,
+        "h": 560
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 661,
+        "y": 99,
+        "w": 544,
+        "h": 483
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 59,
+        "y": 73,
+        "w": 544,
+        "h": 483
+      },
+      "sourceSize": {
+        "w": 656,
+        "h": 560
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 139,
+        "y": 711,
+        "w": 418,
+        "h": 469
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 143,
+        "y": 87,
+        "w": 418,
+        "h": 469
+      },
+      "sourceSize": {
+        "w": 656,
+        "h": 560
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 640,
+        "y": 632,
+        "w": 591,
+        "h": 552
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 61,
+        "y": 4,
+        "w": 591,
+        "h": 552
+      },
+      "sourceSize": {
+        "w": 656,
+        "h": 560
+      }
+    }
+  },
+  "meta": {
+    "image": "moth-anime-v2.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

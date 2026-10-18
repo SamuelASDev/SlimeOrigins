@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 119,
+        "y": 34,
+        "w": 554,
+        "h": 468
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 73,
+        "y": 28,
+        "w": 554,
+        "h": 468
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 500
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 905,
+        "y": 16,
+        "w": 529,
+        "h": 492
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 83,
+        "y": 4,
+        "w": 529,
+        "h": 492
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 500
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 72,
+        "y": 529,
+        "w": 620,
+        "h": 468
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 43,
+        "y": 28,
+        "w": 620,
+        "h": 468
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 500
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 817,
+        "y": 528,
+        "w": 667,
+        "h": 473
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 35,
+        "y": 23,
+        "w": 667,
+        "h": 473
+      },
+      "sourceSize": {
+        "w": 706,
+        "h": 500
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-decor-v2.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

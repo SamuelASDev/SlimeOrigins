@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 113,
+        "y": 149,
+        "w": 446,
+        "h": 378
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 37,
+        "y": 20,
+        "w": 446,
+        "h": 378
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 402
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 717,
+        "y": 156,
+        "w": 456,
+        "h": 377
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 32,
+        "y": 21,
+        "w": 456,
+        "h": 377
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 402
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 109,
+        "y": 754,
+        "w": 458,
+        "h": 369
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 31,
+        "y": 29,
+        "w": 458,
+        "h": 369
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 402
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 688,
+        "y": 764,
+        "w": 512,
+        "h": 394
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 4,
+        "w": 512,
+        "h": 394
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 402
+      }
+    }
+  },
+  "meta": {
+    "image": "wisp.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1",
+    "app": "Slime Origens / source-preserving atlas"
+  }
+}

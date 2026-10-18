@@ -1,5 +1,5 @@
 ﻿import { awardKill, kinds, migrate, type State, type Kind } from './model.ts';
-export type Checkpoint={at:number;kind:Kind;interval:number;enabled:boolean};
+export type Checkpoint={at:number;kind:Kind;interval:number;enabled:boolean;context?:import('./resources.ts').LootContext};
 export function offlineReward(state:State,checkpoint:unknown,now=Date.now()){
  const c=checkpoint as Partial<Checkpoint>|null;
  if(!c||c.enabled!==true||!kinds.includes(c.kind as Kind)||!Number.isFinite(c.at)||!Number.isFinite(c.interval)||c.interval!<3||c.interval!>120||c.at!>now||!state.equipped.length)return {kills:0,seconds:0};
@@ -7,7 +7,7 @@ export function offlineReward(state:State,checkpoint:unknown,now=Date.now()){
  if(seconds<60)return {kills:0,seconds:0};
  // A conservative expedition: at most 240 kills, half the measured live rate.
  const kills=Math.min(240,Math.floor(seconds/(c.interval!*2)));
- for(let i=0;i<kills;i++)awardKill(state,c.kind as Kind);
+ for(let i=0;i<kills;i++)awardKill(state,c.kind as Kind,undefined,undefined,undefined,c.context);
  return {kills,seconds};
 }
 export function decodeSave(text:string):State{

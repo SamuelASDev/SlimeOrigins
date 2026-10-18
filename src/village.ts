@@ -60,7 +60,7 @@ export function craftRecipe(s:State,id:string):boolean{
 /** Compatibility helper: explicit tier stays available even after upgrading the workshop. */
 export function craftGear(s:State,slot:GearSlot,tier=s.village.buildings.workshop):boolean{return craftRecipe(s,`${slot}-${tier}`);}
 export function brewTonic(s:State,now=Date.now()):boolean{const v=s.village;if(!v.buildings.alchemy||v.tonicUntil>now||!pay(v,{herbs:8}))return false;v.tonicUntil=now+600000;return true;}
-export function villageLoot(s:State,kind:Kind,rareRoll=Math.random()){
- const drops=resourceDrops(kind,rareRoll);for(const drop of drops)s.village.materials[drop.material]+=drop.quantity;return drops;
+export function villageLoot(s:State,kind:Kind,rareRoll=Math.random(),context?:import('./resources.ts').LootContext){
+ const drops=resourceDrops(kind,rareRoll,context);for(const drop of drops)s.village.materials[drop.material]+=drop.quantity;return drops;
 }
 export function villageBonuses(s:State,now=Date.now()) {const v=s.village,g=gearBonuses(s);return {defense:v.buildings.workshop*.04+g.defense,attack:g.attack,haste:v.buildings.lab*.05+g.haste,absorb:v.buildings.lab*.02,regen:v.buildings.alchemy*.75+g.regen+(v.tonicUntil>now?3:0)};}

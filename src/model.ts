@@ -1,4 +1,4 @@
-import type {ResourceDrop} from './resources.ts';
+import type {ResourceDrop,LootContext} from './resources.ts';
 import {freshMarket,readMarket,type MarketState} from './market-state.ts';
 import { freshEquipment, addGear, readIdentity, identity, gearSlots, type Equipment, type ItemIdentity, type ItemOrigin } from './equipment.ts';
 import { freshVillage, readVillage, villageLoot, villageBonuses, type Village } from './village.ts';
@@ -19,7 +19,7 @@ export const creatures: Record<Kind, { name: string; hp: number; damage: number;
   armorsaurus: { name: 'Armorsaurus', hp: 110, damage: 11, xp: 30, color: 0xadb8cc, texture: 'armorsaurus' },
   beetle: { name: 'Besouro de musgo', hp: 38, damage: 5, xp: 12, color: 0xb1ce75, texture: 'beetle' },
   snake: { name: 'Serpente púrpura', hp: 34, damage: 6, xp: 14, color: 0xc798d5, texture: 'snake' },
-  wolf: { name: 'Lobo da clareira', hp: 48, damage: 7, xp: 18, color: 0xb6cbd0, texture: 'wolf' },
+  wolf: { name: 'Lobo terrível', hp: 48, damage: 7, xp: 18, color: 0xb6cbd0, texture: 'wolf' },
   mushroom: { name: 'Cogumelo vital', hp: 52, damage: 4, xp: 16, color: 0xe0ac82, texture: 'mushroom' },
   moth: { name: 'Mariposa da bruma', hp: 30, damage: 5, xp: 16, color: 0xc6d7dd, texture: 'moth' },
   frog: { name: 'Sapo do riacho', hp: 45, damage: 6, xp: 18, color: 0x76bdb6, texture: 'frog' },
@@ -62,8 +62,8 @@ export const recipes: Record<FusionId, { parents: [SkillId, SkillId]; essence: n
   conductor: { parents: ['frog', 'wisp'], essence: 12, clue: 'A água abre o caminho para a descarga.' },
 };
 export type SkillItem = ItemIdentity & { uid: number; skill: SkillId; rank: number };
-export type State = { market:MarketState; coins:number; equipment:Equipment; skillSlots:(number|null)[]; village: Village; springReadyAt?: number; inventory: SkillItem[]; nextItem: number; pity: Record<Kind, number>; caveWins: number; caveSector: number; visited: number[]; version: 4; level: number; xp: number; kills: number; essence: number; bossWins: number; fragments: Record<Kind, number>; unlocked: Record<SkillId, boolean>; equipped: SkillId[] };
-export const fresh = (): State => ({ market:freshMarket(), coins:0, equipment:freshEquipment(), skillSlots:[null,null,null], village: freshVillage(), inventory: [], nextItem: 1, pity: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, caveWins: 0, caveSector: 0, visited: [0], version: 4, level: 1, xp: 0, kills: 0, essence: 0, bossWins: 0, fragments: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, unlocked: Object.fromEntries(skillIds.map(k => [k, false])) as Record<SkillId, boolean>, equipped: [] });
+export type State = { market:MarketState; coins:number; equipment:Equipment; skillSlots:(number|null)[]; village: Village; springReadyAt?: number; inventory: SkillItem[]; nextItem: number; pity: Record<Kind, number>; caveWins: number; caveSector: number; forestSector:number; forestVisited:number[]; activeArea:'cave'|'forest'; visited: number[]; version: 4; level: number; xp: number; kills: number; essence: number; bossWins: number; fragments: Record<Kind, number>; unlocked: Record<SkillId, boolean>; equipped: SkillId[] };
+export const fresh = (): State => ({ market:freshMarket(), coins:0, equipment:freshEquipment(), skillSlots:[null,null,null], village: freshVillage(), inventory: [], nextItem: 1, pity: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, caveWins: 0, caveSector: 0, forestSector:0, forestVisited:[0], activeArea:'cave', visited: [0], version: 4, level: 1, xp: 0, kills: 0, essence: 0, bossWins: 0, fragments: Object.fromEntries(kinds.map(k => [k, 0])) as Record<Kind, number>, unlocked: Object.fromEntries(skillIds.map(k => [k, false])) as Record<SkillId, boolean>, equipped: [] });
 const record = (v: unknown): Record<string, unknown> => v && typeof v === 'object' ? v as Record<string, unknown> : {};
 const integer = (v: unknown, fallback = 0, max = 1e9) => typeof v === 'number' && Number.isInteger(v) && v >= 0 ? Math.min(v, max) : fallback;
 export function migrate(raw: unknown): State {
@@ -76,6 +76,8 @@ export function migrate(raw: unknown): State {
   const fragments = record(r.fragments), unlocked = record(r.unlocked);
   for (const k of kinds) result.fragments[k] = integer(fragments[k]);
   for (const k of skillIds) result.unlocked[k] = unlocked[k] === true;
+  result.forestSector=integer(r.forestSector,0,5);result.activeArea=r.activeArea==='forest'?'forest':'cave';
+  result.forestVisited=Array.isArray(r.forestVisited)?[...new Set([0,...r.forestVisited.filter((n):n is number=>typeof n==='number'&&Number.isInteger(n)&&n>=0&&n<6)])]:[0];
   result.caveWins = integer(r.caveWins); result.caveSector = integer(r.caveSector, 0, 6);
   if(r.springReadyAt!==undefined)result.springReadyAt=integer(r.springReadyAt,0,1e15);
   result.visited = Array.isArray(r.visited) ? [...new Set([0,...r.visited.filter((n): n is number => typeof n==='number' && Number.isInteger(n) && n>=0 && n<7)])] : [0];
@@ -195,8 +197,8 @@ export function mix(state:State,a:number,b:number):{ok:boolean;message:string;it
  const item=addItem(state,preview.skill!,preview.rank!,'fusion',parents);
  return {ok:true,message:`Síntese concluída: ${itemLabel(item)}!`,item};
 }
-export function awardKill(state: State, kind: Kind, roll = Math.random(), lootRoll=Math.random(),resourceRoll=Math.random()): { unlocked: boolean; levels: number; item?: SkillItem; materials:ResourceDrop[] } {
- const materials=villageLoot(state,kind,resourceRoll);state.coins+=2;state.kills++;state.essence++;state.xp+=creatures[kind].xp;state.fragments[kind]++;state.pity[kind]++;
+export function awardKill(state: State, kind: Kind, roll = Math.random(), lootRoll=Math.random(),resourceRoll=Math.random(),context?:LootContext): { unlocked: boolean; levels: number; item?: SkillItem; materials:ResourceDrop[] } {
+ const materials=villageLoot(state,kind,resourceRoll,context);state.coins+=2;state.kills++;state.essence++;state.xp+=creatures[kind].xp;state.fragments[kind]++;state.pity[kind]++;
  let item:SkillItem|undefined;let unlocked=false;
  if(roll<.25+villageBonuses(state).absorb||state.pity[kind]>=GUARANTEE){const table=drops[kind];const id=table[Math.min(table.length-1,Math.floor(Math.max(0,lootRoll)*table.length))];unlocked=!state.unlocked[id];item=addItem(state,id);state.pity[kind]=0;}
  return {unlocked,levels:applyLevels(state),item,materials};

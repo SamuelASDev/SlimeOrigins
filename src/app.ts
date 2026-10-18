@@ -1,3 +1,6 @@
+import {FrameBudget,BackgroundExpedition,estimateHuntInterval} from './activity';
+import {HuntWatchdog,needsApproach} from './hunt-navigation';
+import {materialNames,type Material} from './resources.ts';
 import {merchantMarkup,renderMerchant,tickMerchant} from './merchant-ui';
 import {skillIcon} from './item-icons';
 import { preserveMenuState } from './menu-state';
@@ -10,7 +13,7 @@ import { synthesisMarkup, renderItemMenus } from './synthesis-ui';
 import Phaser from 'phaser';
 import './game.css';
 import { WorldScene } from './world';
-import { sectors, center, route, walkable, clearLine, CAVE_WIDTH, CAVE_HEIGHT, type Point } from './cave-map';
+import { sectors, center, route, walkable, clearLine, nearestFloor, CAVE_WIDTH, CAVE_HEIGHT, type Point } from './cave-map';
 import { CombatEffects, type Telegraph } from './combat-effects';
 import { enemyAttacks, slimeAttack, startAttack, advanceAttack, type AttackClock, type AttackSpec } from './attack-timing';
 import { preloadSpriteArt, registerSpriteAnimations, makeActor } from './sprite-art';
@@ -22,6 +25,7 @@ let checkpoint: unknown = null;
 let offlineSummary = '';
 let observedKills = 0, observationStart = Date.now();
 let lastHuntedKind: Kind = 'bat';
+let awayExpedition:BackgroundExpedition|null=null;
 let audioContext: AudioContext | null = null;
 let soundEnabled = localStorage.getItem('slime-sound') === 'true';
 function chime(){
@@ -42,7 +46,7 @@ function save() {
   try { const seconds=(Date.now()-observationStart)/1000;
     const interval=observedKills>0?seconds/observedKills:0;
     const checkpoint:Checkpoint={at:Date.now(),kind:lastHuntedKind,interval,enabled:!paused&&!inVillage&&!scene?.bossActive&&scene?.recovering===0&&seconds>=60&&observedKills>=3};
-    localStorage.setItem(SAVE, JSON.stringify({...state,checkpoint})); }
+    localStorage.setItem(SAVE, JSON.stringify({...state,checkpoint:awayExpedition?.checkpoint(Date.now())??checkpoint})); }
   catch { if (!saveWarning) { saveWarning = true; log('Não foi possível salvar neste navegador. A sessão continua funcionando.'); } }
 }
 
@@ -100,7 +104,7 @@ ${merchantMarkup}
 <section id="fusion-panel" class="game-window frame" role="dialog" aria-labelledby="fusion-title" hidden><div class="window-header"><div><p class="label">PREDADOR / SÍNTESE</p><h2 id="fusion-title">Câmara de síntese</h2></div><button class="close-window" aria-label="Fechar fusões">×</button></div><div class="window-body">${synthesisMarkup}</div><div class="window-footer">Dois ingredientes · confira a prévia e confirme</div></section>
 <section id="boss-panel" class="game-window frame" role="dialog" aria-labelledby="boss-title" hidden><div class="window-header"><div><p class="label" id="boss-area-label">DESAFIO DA CAVERNA</p><h2 id="boss-title">Serpente Negra Anciã</h2></div><button class="close-window" aria-label="Fechar chefe">×</button></div><div class="window-body"><div class="boss-art" aria-hidden="true">♜</div><p id="boss-description" class="boss-description">Um antigo besouro coberto de pedra guarda o coração da floresta. Escolha sua build antes de entrar na arena.</p><div id="boss-traits" class="boss-traits"><p><b>Carapaça pétrea</b> · recebe 60% menos dano físico. Veneno ignora a defesa; água causa +25% de dano.</p><p><b>Impacto sísmico</b> · avisa antes de atacar uma área. Instinto caçador recua automaticamente; Véu de névoa reduz o impacto.</p><p><b>Preparação</b> · nível 4 recomendado. Você entra com vida cheia e não pode trocar a build durante o desafio.</p></div><p id="boss-requirements" class="hint"></p><p id="boss-result" class="boss-result"></p><button id="challenge" class="hunt-button">Desafiar guardião</button><p class="hint">Recompensa: 10 essências, 100 EXP e 1 troféu por vitória. Uma derrota não remove seu progresso. O poder do guardião acompanha o nível de entrada até o nível 8.</p></div></section>
 <section id="journal-panel" class="game-window frame" role="dialog" aria-labelledby="journal-title" hidden><div class="window-header"><div><p class="label">GRANDE SÁBIO</p><h2 id="journal-title">Diário da expedição</h2></div><button class="close-window" aria-label="Fechar diário">×</button></div><div class="window-body"><div id="log" class="log" role="log"></div></div></section>
-<section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Expedições offline usam 50% do ritmo observado após 60 segundos e 3 abates de caçada ativa, com limite de 2 horas e 240 abates. Não exploram novas regiões nem enfrentam chefes.</p><div class="save-tools"><button id="sound-toggle">Áudio</button><button id="export-save">Exportar save</button><label class="import-save">Importar save<input id="import-save" type="file" accept="application/json,.json"></label></div><details class="save-text-import"><summary>Restaurar save por texto</summary><label>JSON do save<textarea id="import-save-text" aria-label="JSON do save" rows="4" placeholder="Cole aqui o conteúdo do arquivo de save"></textarea></label><button id="import-save-text-button">Validar e restaurar</button></details><div id="restore-confirmation" hidden><p id="restore-description"></p><button id="confirm-restore">Confirmar restauração</button><button id="cancel-restore">Cancelar restauração</button></div><p id="save-feedback" role="status"></p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>I · Inventário</span><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
+<section id="settings-panel" class="game-window frame" role="dialog" aria-labelledby="settings-title" hidden><div class="window-header"><div><p class="label">SLIME · ORIGENS</p><h2 id="settings-title">Opções</h2></div><button class="close-window" aria-label="Fechar opções">×</button></div><div class="window-body settings"><p>Progresso salvo neste navegador. Saves da primeira versão são migrados automaticamente. Ao trocar de janela, a caça visível continua. Com a aba oculta, uma expedição acumula recompensas e retoma automaticamente. Usa 50% do ritmo observado ou uma estimativa inicial, com limite de 2 horas e 240 abates por ausência. Não explora novas regiões nem enfrenta chefes.</p><div class="save-tools"><button id="sound-toggle">Áudio</button><button id="export-save">Exportar save</button><label class="import-save">Importar save<input id="import-save" type="file" accept="application/json,.json"></label></div><details class="save-text-import"><summary>Restaurar save por texto</summary><label>JSON do save<textarea id="import-save-text" aria-label="JSON do save" rows="4" placeholder="Cole aqui o conteúdo do arquivo de save"></textarea></label><button id="import-save-text-button">Validar e restaurar</button></details><div id="restore-confirmation" hidden><p id="restore-description"></p><button id="confirm-restore">Confirmar restauração</button><button id="cancel-restore">Cancelar restauração</button></div><p id="save-feedback" role="status"></p><button id="fullscreen">⛶ Entrar em tela cheia</button><div class="shortcut-guide"><span>I · Inventário</span><span>H · Habilidades</span><span>F · Fusões</span><span>B · Chefe</span><span>J · Diário</span><span>O · Opções</span><span>Esc · Fechar menu</span></div><div class="reset-area"><p>Reinicia nível, essências, troféus e habilidades.</p><button id="reset">Recomeçar aventura</button></div></div></section>`;
 
 const el = (id: string) => document.getElementById(id)!;
 const put = (id: string, value: string | number) => { const target=el(id),text=String(value);if(target.textContent!==text)target.textContent=text; };
@@ -143,6 +147,7 @@ function updateLiveCounters(){
  put('journey-objective','◆ '+nextObjective(state).text);
  put('inventory-coins',`◉ ${state.coins} moedas`);
  put('collection',`${state.inventory.length} cópias · ${state.coins} moedas`);
+ document.querySelectorAll<HTMLElement>('[data-resource-count]').forEach(node=>{const text=String(state.village.materials[node.dataset.resourceCount as Material]??0);if(node.textContent!==text)node.textContent=text;});
  put('pending-loot-text',pendingLoot?`${pendingLoot} ${pendingLoot===1?'nova cópia recebida':'novas cópias recebidas'} na mochila`:'Mochila atualizada · caça independente');
  el('pending-loot').classList.toggle('has-new',pendingLoot>0);el('show-new-loot').style.visibility=pendingLoot?'visible':'hidden';
 }
@@ -187,8 +192,10 @@ function renderActiveMenu() {
 
 }
 
-type Enemy = { zone: number; x: number; y: number; baseScale: number; action: { clock: AttackClock; aim: { x: number; y: number }; direction: { x: number; y: number } } | null; kind: Kind; boss: boolean; rooted: number; sprite: Phaser.GameObjects.Sprite; shadow: Phaser.GameObjects.Ellipse; hitUntil: number; hp: number; max: number; bar: Phaser.GameObjects.Graphics; attackAt: number; poisonUntil: number; poisonPower: number; poisonAt: number; wet: number };
+type Enemy = { unreachableUntil:number; zone: number; x: number; y: number; baseScale: number; action: { clock: AttackClock; aim: { x: number; y: number }; direction: { x: number; y: number } } | null; kind: Kind; boss: boolean; rooted: number; sprite: Phaser.GameObjects.Sprite; shadow: Phaser.GameObjects.Ellipse; hitUntil: number; hp: number; max: number; bar: Phaser.GameObjects.Graphics; attackAt: number; poisonUntil: number; poisonPower: number; poisonAt: number; wet: number };
 class Meadow extends WorldScene {
+  frameBudget=new FrameBudget();
+  routeWatchdog=new HuntWatchdog();
   player!: Phaser.GameObjects.Sprite;
   playerShadow!: Phaser.GameObjects.Ellipse;
   playerPose = 0;
@@ -248,12 +255,14 @@ class Meadow extends WorldScene {
     const distance=Phaser.Math.Distance.Between(this.player.x,this.player.y,aim.x,aim.y);if(distance<1)return false;
     const a=Phaser.Math.Angle.Between(this.player.x,this.player.y,aim.x,aim.y),n=Math.min(step,distance);
     const next={x:this.player.x+Math.cos(a)*n,y:this.player.y+Math.sin(a)*n};
-    if(this.area==='cave'&&!walkable(next))return false;
+    if(this.area==='cave'&&!clearLine(this.player,next)){this.path=[];this.pathAt=0;return false;}
     this.player.setPosition(next.x,next.y).setFlipX(Math.cos(a)<0);return true;
   }
   strikes: { owner: Enemy; remaining: number; aim: { x: number; y: number }; spec: AttackSpec; damage: number }[] = [];
   preload() { preloadSpriteArt(this); this.load.image('veldora','/assets/sprites/veldora-cave.png'); this.load.atlas('caveDecor','/assets/sprites/cave-decor-v2.png','/assets/sprites/cave-decor-v2.json'); }
   create() {
+    this.frameBudget.reset(performance.now());
+    this.events.on('wake',()=>{this.frameBudget.reset(performance.now());this.routeWatchdog.reset();});
     registerSpriteAnimations(this);
     this.playerShadow = this.add.ellipse(400, 240, 34, 9, 0x10291e, .3);
     this.player = makeActor(this, 400, 240, 'slime', 44);
@@ -275,7 +284,7 @@ class Meadow extends WorldScene {
     if(boss&&this.caveBoss){const c=center(4);x=c.x+115;y=c.y;}
     const hp = boss ? (this.caveBoss?780:560) + this.bossLevel * (this.caveBoss?45:20) : creatures[kind].hp;
     const sprite = makeActor(this, x, y, boss ? this.caveBoss?'caveBoss':'guardian' : creatures[kind].texture, boss ? this.caveBoss?120:86 : kind==='spider'?54:43);
-    const enemy: Enemy = { x, y, zone, rooted: 0, baseScale: sprite.scaleX, action: null, kind, boss, sprite, shadow: this.add.ellipse(x, y, boss ? 65 : 32, boss ? 15 : 8, 0x10291e, .3), hitUntil: 0, hp, max: hp, bar: this.add.graphics().setDepth(20), attackAt: Phaser.Math.Between(250, 550), poisonUntil: 0, poisonPower: 1, poisonAt: 1000, wet: 0 };
+    const enemy: Enemy = { unreachableUntil:0, x, y, zone, rooted: 0, baseScale: sprite.scaleX, action: null, kind, boss, sprite, shadow: this.add.ellipse(x, y, boss ? 65 : 32, boss ? 15 : 8, 0x10291e, .3), hitUntil: 0, hp, max: hp, bar: this.add.graphics().setDepth(20), attackAt: Phaser.Math.Between(250, 550), poisonUntil: 0, poisonPower: 1, poisonAt: 1000, wet: 0 };
     this.enemies.push(enemy); return enemy;
   }
   clearEncounter() { this.generation++; this.combatFX?.clear(); this.strikes = []; this.playerAttack = null; this.playerPose = 0; this.playerHit = 0; this.player.clearTint().setScale(this.playerBaseScale); for (const e of this.enemies) { e.sprite.destroy(); e.shadow.destroy(); e.bar.destroy(); } this.enemies = []; this.target = null; this.warning.clear(); }
@@ -294,7 +303,7 @@ class Meadow extends WorldScene {
   finishBoss(result: 'win' | 'loss' | 'retreat') {
     if (!this.bossActive) return;
     this.bossActive = false; this.windup = 0; this.clearEncounter(); el('boss-hud').hidden = true;
-    if (result === 'win') { if(this.caveBoss){state.caveWins++;addItem(state,'serpent');addItem(state,'heat');addItem(state,'centipede');} state.bossWins++; state.essence += 10; state.xp += 100; applyLevels(state); lastBossResult = `Vitória! ${this.caveBoss?'+3 habilidades (veneno, calor e paralisia), ':''}+10 essências, +100 EXP e +1 troféu. Total: ${state.bossWins} ${state.bossWins === 1 ? 'troféu' : 'troféus'}.`; save(); }
+    if (result === 'win') { if(this.caveBoss){state.caveWins++;addItem(state,'serpent');addItem(state,'heat');addItem(state,'centipede');} state.village.materials.scale+=3;state.village.materials.crystal+=2;state.bossWins++; state.essence += 10; state.xp += 100; applyLevels(state); lastBossResult = `Vitória! ${this.caveBoss?'+3 habilidades (veneno, calor e paralisia), ':''}+10 essências, +100 EXP, +3 escamas, +2 cristais e +1 troféu. Total: ${state.bossWins} ${state.bossWins === 1 ? 'troféu' : 'troféus'}.`; save(); }
     else lastBossResult = result === 'loss' ? 'Derrota. Nenhum progresso perdido. Tente defesa e recuperação, ou água e eletricidade. Instinto caçador evita o impacto.' : 'Você recuou. Ajuste sua build e desafie novamente quando quiser.';
     this.sector=this.returnSector;state.caveSector=this.sector;const home=this.area==='cave'?center(this.sector):{x:400,y:240};this.health = maxHp(state); this.player.setPosition(home.x,home.y);this.cameras.main.centerOn(home.x,home.y);this.path=[]; this.resetSkillTimers(); this.populate();save();
     log(lastBossResult, true); renderMenus(); this.renderHud(); if (activePanel !== 'boss-panel') togglePanel('boss-panel');
@@ -321,9 +330,10 @@ class Meadow extends WorldScene {
     const k = enemy.kind, x = enemy.x, y = enemy.y;
     this.enemies.splice(this.enemies.indexOf(enemy), 1); enemy.sprite.destroy(); enemy.shadow.destroy(); enemy.bar.destroy(); if (this.target === enemy) this.target = null;
     if(this.area==='cave' && enemy.zone===this.sector && this.destination===null) {this.sectorKills++;if(this.exploring&&this.sectorKills>=6&&this.sector<6)this.travelTo(this.sector+1);}
-    const reward = awardKill(state, k); this.health = Math.min(maxHp(state), this.health + 5);
+    const reward = awardKill(state, k);
+    const resourceSummary=reward.materials.map(d=>`+${d.quantity} ${materialNames[d.material]}`).join(', '); this.health = Math.min(maxHp(state), this.health + 5);
     if (reward.unlocked) { log(`Absorção concluída: ${skills[reward.item!.skill].name}! Abra Habilidades para equipar.`, true); this.float(this.player.x, this.player.y - 24, 'ABSORÇÃO!', '#d6f49d'); }
-    else log(reward.item?`Absorvido: ${itemLabel(reward.item)} · cópia #${reward.item.uid}.`:`${this.enemyName(enemy)}: +1 essência, +${creatures[k].xp} EXP.`);
+    else log(reward.item?`Absorvido: ${itemLabel(reward.item)} · ${resourceSummary}.`:`${this.enemyName(enemy)}: +2 moedas, +${creatures[k].xp} EXP · ${resourceSummary}.`);
     if (reward.levels) { this.health = maxHp(state); log(`Nível ${state.level}! Ataque e vitalidade aumentaram.`, true); }
     const token = this.generation; this.time.delayedCall(3000, () => { if (token === this.generation && !this.bossActive) this.spawn(k,false,enemy.zone); });
     const orb = this.add.circle(x, y, 4, creatures[k].color).setDepth(30); this.tweens.add({ targets: orb, x: this.player.x, y: this.player.y, scale: 0, duration: 400, onComplete: () => orb.destroy() });
@@ -453,9 +463,13 @@ class Meadow extends WorldScene {
     if(inVillage){put('location-name','Tempest · Vila dos aliados');put('status','ZONA SEGURA · SEM MONSTROS');document.querySelector('.location>p')!.textContent='VILA · FLORESTA DE JURA';}
 
   }
-  update(_time: number, delta: number) {
-    if(document.hidden)return;
-    const dt = Math.min(delta, 100);
+  update(_time:number,_delta:number){
+    const active=!document.hidden&&!paused&&!inVillage;
+    const steps=this.frameBudget.steps(performance.now(),active);
+    if(!active){if(!document.hidden)this.renderHud();return;}
+    for(const dt of steps)this.simulate(dt);
+  }
+  simulate(dt:number){
     if (paused) { this.renderHud(); return; }
     if (this.recovering > 0) { this.recovering -= dt; if (this.recovering <= 0) { this.health = maxHp(state); log('Vitalidade restaurada. Retomando a caça.');receiveRewards(); } this.renderHud(); return; }
     this.springAt=Math.max(0,(state.springReadyAt??0)-Date.now());
@@ -464,8 +478,8 @@ class Meadow extends WorldScene {
     if (this.playerHit <= 0) this.player.clearTint();
     let playerMoving = false;
     this.attackAt -= dt; this.health = Math.min(maxHp(state), this.health + dt / 1000 * (1.5 + fx.regen));
-    if (!this.target || !this.enemies.includes(this.target) || (!this.bossActive && priority !== 'any' && this.target.kind !== priority && this.enemies.some(e => e.kind === priority))) {
-      const local = this.enemies.filter(e=>this.area!=='cave'||e.zone===this.sector);
+    if (!this.target || !this.enemies.includes(this.target) || this.target.unreachableUntil>Date.now() || (!this.bossActive && priority !== 'any' && this.target.kind !== priority && this.enemies.some(e => e.kind === priority))) {
+      const local = this.enemies.filter(e=>(this.area!=='cave'||e.zone===this.sector)&&e.unreachableUntil<=Date.now());
       const candidates = local.filter(e => this.bossActive || priority === 'any' || e.kind === priority);
       this.target = (candidates.length ? candidates : local).reduce<Enemy | null>((best, e) => !best || Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y) < Phaser.Math.Distance.Between(this.player.x, this.player.y, best.x, best.y) ? e : best, null);
     }
@@ -491,9 +505,17 @@ class Meadow extends WorldScene {
     }
     if (this.target && !evading && !this.playerAttack) {
       const e = this.target, reach = e.boss ? 65 : 42, distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
-      if (distance > reach) { playerMoving = this.moveToward(e, Math.min(distance - reach + 1, dt * .065 * fx.speed)); }
+      if (needsApproach(this.player,e,reach,this.area!=='cave'||clearLine(this.player,e))) { playerMoving = this.moveToward(e, Math.min(distance - reach + 1, dt * .065 * fx.speed)); }
       else if (this.attackAt <= 0 && (this.area!=='cave'||clearLine(this.player,e))) { this.attackAt = 850 / fx.haste; this.playerAttack = { clock: startAttack(), target: e }; this.player.setFlipX(e.x < this.player.x); }
     }
+    if(!this.bossActive&&(this.target||this.destination!==null)){
+      if(this.routeWatchdog.tick(dt,this.player,`${state.kills}:${this.destination}:${this.target?.hp??0}`)){
+        if(this.target)this.target.unreachableUntil=Date.now()+8000;
+        this.target=null;this.playerAttack=null;this.path=[];this.pathAt=0;
+        if(this.area==='cave'&&!walkable(this.player)){const safe=nearestFloor(this.player);if(safe)this.player.setPosition(safe.x,safe.y);}
+        log('Rota obstruída: Rimuru está recalculando o caminho.');
+      }
+    }else this.routeWatchdog.reset();
     this.updatePlayerAttack(dt);
     if (this.playerPose <= 0 && !this.playerAttack) this.player.play(playerMoving ? 'slime-walk' : 'slime-idle', true);
     this.playerShadow.setPosition(this.player.x, this.player.y + 1).setDepth(this.player.y / 100 - .05);
@@ -559,14 +581,14 @@ el('leave-village').onclick=leaveVillage;
 el('center-village').onclick=()=>{togglePanel(null);villageMap.centerVillage();};
 document.querySelectorAll<HTMLButtonElement>('[data-village-place]').forEach(b=>b.onclick=()=>{const id=b.dataset.villagePlace as Building;villageMap.focusBuilding(id);openVillageBuilding(id);});
 
-new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: 800, height: 480, backgroundColor: '#365639', pixelArt: true, antialias: false, scene: [scene,villageMap], scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH } });
+const game=new Phaser.Game({ autoFocus:false,fps:{smoothStep:false},type: Phaser.AUTO, parent: 'game', width: 800, height: 480, backgroundColor: '#365639', pixelArt: true, antialias: false, scene: [scene,villageMap], scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH } });
 el('pause').onclick = () => { observationStart=Date.now();observedKills=0;paused = !paused; if (paused) { scene.anims.pauseAll(); scene.tweens.pauseAll(); scene.time.paused = true; } else { scene.anims.resumeAll(); scene.tweens.resumeAll(); scene.time.paused = false; } put('pause', paused ? '▶ Retomar caça' : 'Ⅱ Pausar caça'); scene.renderHud(); };
 (el('priority') as HTMLSelectElement).onchange = event => { priority = (event.target as HTMLSelectElement).value as Kind | 'any'; scene.target = null; };
 el('challenge').onclick = () => scene.startBoss(); el('retreat').onclick = () => scene.finishBoss('retreat');
 el('fullscreen').onclick = async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); } catch { log('Tela cheia indisponível. Você também pode usar F11.'); } };
 document.addEventListener('fullscreenchange', () => put('fullscreen', document.fullscreenElement ? '⛶ Sair da tela cheia' : '⛶ Entrar em tela cheia'));
 el('reset').onclick = () => { if (confirm('Recomeçar e apagar o progresso desta aventura?')) { state = fresh(); save(); location.reload(); } };
-window.addEventListener('pagehide',()=>{if(!document.hidden)save();});
+window.addEventListener('pagehide',()=>{if(awayExpedition)creditBackground();save();});
 
 el('area-cave').onclick=()=>{leaveVillage();scene.setArea('cave');};
 el('area-forest').onclick=()=>{leaveVillage();scene.setArea('forest');};
@@ -591,7 +613,31 @@ el('confirm-restore').onclick=()=>{if(!pendingRestore)return;try{restoringSave=t
 el('cancel-restore').onclick=()=>{pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback','Restauração cancelada.');};
 (el('import-save') as HTMLInputElement).onchange=async event=>{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw new Error('Arquivo muito grande.');stageRestore(await file.text());}catch(error){pendingRestore=null;el('restore-confirmation').hidden=true;put('save-feedback',error instanceof Error?error.message:'Não foi possível importar.');}finally{input.value='';}};
 setInterval(()=>{if(!document.hidden)save();},15000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden){save();}else{try{const raw=JSON.parse(localStorage.getItem(SAVE)??'null');const previousCopies=state.inventory.length;const reward=offlineReward(state,raw?.checkpoint);if(reward.kills){log(`Expedição offline: ${reward.kills} abates e seus recursos recebidos.`,true);receiveRewards(state.inventory.length-previousCopies);}}catch{}observationStart=Date.now();observedKills=0;save();}});
+function startBackground(){
+ if(awayExpedition||restoringSave)return;
+ const seconds=(Date.now()-observationStart)/1000;
+ const kind=scene.target?.kind??(scene.area==='cave'?sectors[state.caveSector].kind:lastHuntedKind);
+ const interval=seconds>=60&&observedKills>=3?Math.min(120,Math.max(3,seconds/observedKills)):estimateHuntInterval(state,kind);
+ awayExpedition=new BackgroundExpedition({at:Date.now(),kind,interval,enabled:!paused&&!inVillage&&!scene.bossActive&&scene.recovering<=0});
+ scene.frameBudget.reset(performance.now());save();
+}
+function creditBackground(){
+ if(!awayExpedition||restoringSave)return;const kills=awayExpedition.claim(Date.now());if(!kills)return;
+ const before=state.inventory.length;
+ for(let i=0;i<kills;i++)awardKill(state,awayExpedition.start.kind);
+ receiveRewards(state.inventory.length-before);save();
+}
+function resumeVisible(){
+ if(document.hidden)return;creditBackground();awayExpedition=null;
+ observationStart=Date.now();observedKills=0;scene.frameBudget.reset(performance.now());scene.routeWatchdog.reset();
+ game.loop.resetDelta();if(!game.loop.running)game.loop.wake();
+ if(!paused&&!inVillage&&scene.player){scene.anims.resumeAll();scene.tweens.resumeAll();scene.time.paused=false;}
+ if(scene.player)scene.renderHud();save();
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)startBackground();else resumeVisible();});
+window.addEventListener('focus',()=>{if(!document.hidden&&awayExpedition)resumeVisible();});
+setInterval(()=>{if(document.hidden){startBackground();creditBackground();}},1000);
+
 
 setTimeout(()=>{if(offlineSummary){log(offlineSummary,true);offlineSummary='';}},1000);
 

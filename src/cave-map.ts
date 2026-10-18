@@ -34,5 +34,15 @@ export function route(a: Point, b: Point): Point[] {
  const queue = [start], previous = new Map<string, string | null>([[start,null]]);
  for (let i=0; i<queue.length && !previous.has(goal); i++) { const [x,y]=queue[i].split(',').map(Number); for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const next=key(x+dx,y+dy); if (floor.has(next)&&!previous.has(next)) { previous.set(next,queue[i]); queue.push(next); } } }
  if (!previous.has(goal)) return [];
- const path: Point[]=[]; for(let at: string | null=goal; at && at!==start; at=previous.get(at)??null) { const [x,y]=at.split(',').map(Number); path.push({x:x*CELL+CELL/2,y:y*CELL+CELL/2}); } return path.reverse();
+ const path: Point[]=[]; for(let at: string | null=goal; at && at!==start; at=previous.get(at)??null) { const [x,y]=at.split(',').map(Number); path.push({x:x*CELL+CELL/2,y:y*CELL+CELL/2}); }
+ path.reverse();
+ // From an off-centre point, the diagonal to the next tile can cut a pillar corner.
+ if(path.length&&!clearLine(a,path[0]))path.unshift({x:Math.floor(a.x/CELL)*CELL+CELL/2,y:Math.floor(a.y/CELL)*CELL+CELL/2});
+ return path;
+}
+
+export function nearestFloor(p:Point,radius=6):Point|null{
+ if(walkable(p))return {x:p.x,y:p.y};let best:Point|null=null,bestDistance=Infinity;
+ const cx=Math.floor(p.x/CELL),cy=Math.floor(p.y/CELL);
+ for(let y=-radius;y<=radius;y++)for(let x=-radius;x<=radius;x++){const point={x:(cx+x)*CELL+CELL/2,y:(cy+y)*CELL+CELL/2};if(walkable(point)){const d=Math.hypot(point.x-p.x,point.y-p.y);if(d<bestDistance){best=point;bestDistance=d;}}}return best;
 }

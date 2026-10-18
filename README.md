@@ -22,7 +22,7 @@ O build verificará os tipos e produzirá `dist/`, que pode ser servido por hosp
 
 ## Jogar
 
-- **V · Vila** visita um mapa seguro, sem monstros. Arraste com o mouse para explorar e clique nas construções para administrar. A caça fica suspensa durante a visita; **Voltar à caça** retorna à área anterior. Funde após dez abates, construa Oficina/Laboratório/Alquimia e acolha o artesão após vinte abates. Veja [documentação/etapa-3.md](documentação/etapa-3.md).
+- **V · Vila** visita um mapa seguro, sem monstros. Arraste para explorar, use a roda para zoom e clique em Kaijin, Benimaru ou Shuna para administrar a vila. A caça fica suspensa durante a visita; **Voltar à caça** retorna à área anterior. Funde após dez abates, construa Oficina/Laboratório/Alquimia e acolha o artesão após vinte abates. Veja [documentação/etapa-3.md](documentação/etapa-3.md).
 
 - O mapa ocupa toda a janela. Vida e experiência ficam no canto superior; os controles de caça ficam na barra inferior.
 - Abra habilidades com **H**, fusões com **F**, chefe com **B**, diário com **J** e opções com **O**, ou pelos botões laterais. **Esc** fecha o painel. A caça continua ao fundo.
@@ -39,11 +39,11 @@ O build verificará os tipos e produzirá `dist/`, que pode ser servido por hosp
 - Subir de nível melhora ataque e vida e recupera a vitalidade.
 - Ao perder toda a vida, o slime se recupera por cinco segundos, sem perder progresso.
 - **Pausar caça** interrompe a simulação. Em **Opções**, **Recomeçar aventura** apaga o progresso após confirmação.
-- Nível, experiência, abates, fragmentos, essências, troféus, fusões e build ficam no armazenamento local do navegador. Saves v1 migram automaticamente e recebem essências pelos abates anteriores. Vida, monstros e caça recomeçam ao recarregar; um desafio em andamento não é salvo. Não há progresso offline nesta etapa.
+- Nível, experiência, abates, fragmentos, essências, troféus, fusões e build ficam no armazenamento local do navegador. Saves v1 migram automaticamente e recebem essências pelos abates anteriores. Vida, monstros e caça recomeçam ao recarregar; um desafio em andamento não é salvo. Há expedição offline limitada a duas horas e 240 abates, usando 50% do ritmo observado após pelo menos 60 segundos e três abates de caça ativa. Requer habilidade equipada.
 
 ## Escopo
 
-Implementado: Caverna do Selo com sete setores conectados, salas amplas e pilares com colisão, aranhas, inventário de cópias, evolução em nove níveis/três estágios, onze combinações entre tipos, chefe da caverna, nascente renovável, encontro amistoso com Veldora e a clareira anterior. Vila e equipamentos pertencem às próximas etapas.
+Implementado: Caverna do Selo com sete setores conectados, salas amplas e pilares com colisão, aranhas, inventário de cópias, evolução em nove níveis/três estágios, onze combinações entre tipos, chefe da caverna, nascente renovável, encontro amistoso com Veldora e a clareira anterior. Vila e equipamentos assimilados estão implementados. A revisão de Tempest inclui moradores clicáveis, objetivos guiados, áudio opcional, exportação/importação e expedição offline. Veja [etapa 4](documentação/etapa-4.md).
 
 Em **Mapa**, escolha um setor para o slime caminhar até ele ou deixe a exploração automática avançar após seis abates. Desmarque essa opção para farmar no mesmo setor. O mapa tem 9.984 × 2.560 unidades; a câmera acompanha o personagem. O último setor alcançado é salvo. Veja [documentação/habilidades-itens-e-caverna-v3.md](documentação/habilidades-itens-e-caverna-v3.md) para regras, colinha completa, pesquisa do anime, arte, migração e limitações.
 
@@ -56,3 +56,5 @@ Os sprites ficam em `public/assets/sprites/`. Animações e carregamento estão 
 A revisão anime usa as folhas `*-anime-v2.png`. Ataques agora têm preparação, execução, impacto e recuperação; veja [documentação/combate-visual.md](documentação/combate-visual.md).
 
 Planejamento completo em [documentação/planejamento.md](documentação/planejamento.md).
+
+Em **Opções**, exporte e importe o save JSON e ative o áudio. O objetivo acima da barra de caça orienta a progressão; clique nele para abrir a próxima ação.

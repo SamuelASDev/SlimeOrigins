@@ -337,4 +337,4 @@ Validar esse ciclo antes de produzir grande quantidade de conteúdo. O que o jog
 - Etapa 2 implementada: oito habilidades básicas, builds de três espaços e seis pontos de capacidade, três fusões permanentes e primeiro chefe. Registro em [etapa-2.md](etapa-2.md).
 - Etapa 3 implementada: vila integrada, três construções aprimoráveis, artesão goblin, materiais de caça, componentes assimilados e tônico. Registro em [etapa-3.md](etapa-3.md).
 - As regras atuais de itens e síntese substituem as propostas iniciais: veja [habilidades-itens-e-caverna-v3.md](habilidades-itens-e-caverna-v3.md).
-- Próxima entrega: versão vertical, com tutorial, áudio, exportação/importação de save e progresso offline. Demais decisões de conteúdo continuam propostas até implementação ou confirmação.
+- Etapa 4 implementada: vila pixel art inspirada em Tempest com moradores clicáveis, objetivos guiados, áudio opcional, exportação/importação de save e expedição offline conservadora. Veja [etapa-4.md](etapa-4.md). QA visual no navegador e balanceamento de sessões reais permanecem pendentes antes da expansão.

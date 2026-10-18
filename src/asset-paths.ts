@@ -2,7 +2,7 @@
 export const spriteFiles = {
   slime: 'slime',
   spider: 'cave-spider-v2',
-  caveBoss: 'cave-serpent-boss',
+  caveBoss: 'cave-serpent-boss-v2',
   serpent: 'cave-snake',
   centipede: 'cave-centipede',
   armorsaurus: 'cave-armorsaurus',

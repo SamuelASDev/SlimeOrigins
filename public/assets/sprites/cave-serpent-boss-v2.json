@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "0": {
+      "frame": {
+        "x": 39,
+        "y": 29,
+        "w": 694,
+        "h": 482
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 39,
+        "y": 5,
+        "w": 694,
+        "h": 482
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 491
+      }
+    },
+    "1": {
+      "frame": {
+        "x": 792,
+        "y": 28,
+        "w": 696,
+        "h": 483
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 24,
+        "y": 4,
+        "w": 696,
+        "h": 483
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 491
+      }
+    },
+    "2": {
+      "frame": {
+        "x": 39,
+        "y": 540,
+        "w": 694,
+        "h": 464
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 39,
+        "y": 23,
+        "w": 694,
+        "h": 464
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 491
+      }
+    },
+    "3": {
+      "frame": {
+        "x": 786,
+        "y": 571,
+        "w": 732,
+        "h": 433
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 18,
+        "y": 54,
+        "w": 732,
+        "h": 433
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 491
+      }
+    }
+  },
+  "meta": {
+    "image": "cave-serpent-boss-v2.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "app": "Slime Origens / fixed cell anchor and shared ground baseline"
+  }
+}

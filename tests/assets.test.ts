@@ -85,3 +85,13 @@ test('props da caverna mantêm recortes originais com bases independentes',()=>{
  assert.equal(atlas.meta.image,'cave-decor-v2.png');assert.deepEqual(Object.keys(atlas.frames),['ore','pillar','herbs','web']);
  for(const [i,item] of Object.values(atlas.frames).entries() as ArrayIterator<[number,any]>){const {w,h}=item.frame;assert.deepEqual(item.frame,original.frames[String(i)].frame);assert.deepEqual(item.sourceSize,{w,h});assert.deepEqual(item.spriteSourceSize,{x:0,y:0,w,h});assert.equal(item.trimmed,false);}
 });
+
+test('chefe serpente tem quatro poses isoladas e cauda sem vazamento de célula vizinha',()=>{
+ const atlas=JSON.parse(readFileSync(new URL('cave-serpent-boss-v2.json',dir),'utf8'));
+ assert.equal(spriteFiles.caveBoss,'cave-serpent-boss-v2');assert.deepEqual(Object.keys(atlas.frames),['0','1','2','3']);
+ const cw=atlas.meta.size.w/2,ch=atlas.meta.size.h/2;const neutral=atlas.frames['0'].sourceSize;
+ for(let i=0;i<4;i++){const f=atlas.frames[String(i)],{x,y,w,h}=f.frame,left=i%2*cw,top=Math.floor(i/2)*ch;
+  assert.ok(x>left&&y>top&&x+w<left+cw&&y+h<top+ch,`pose ${i}: no cell overlap`);
+  assert.deepEqual(f.sourceSize,neutral);assert.equal(f.spriteSourceSize.x,x-left,'anchor follows fixed cell rather than moving head centroid');assert.equal(f.spriteSourceSize.y+h,neutral.h-4,'same ground baseline');
+ }
+});
